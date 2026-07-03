@@ -8,7 +8,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from valueindex import config, indicators, registry, stats, webui
+import numpy as np
+
+from valueindex import config, indicators, quant, registry, stats, webui
 
 st.set_page_config(page_title="지표 가이드", page_icon="📚", layout="wide")
 panel, statuses, extras = webui.get_data()
@@ -64,16 +66,32 @@ cape = panel["cape"]
 scatter_df = pd.DataFrame({"cape": cape, "fwd": fwd}).dropna()
 current_cape = cape.dropna().iloc[-1]
 
+cq = quant.conditional_quantiles(scatter_df["cape"], scatter_df["fwd"])
+
 fig = go.Figure()
 fig.add_trace(
     go.Scatter(
         x=scatter_df["cape"], y=scatter_df["fwd"], mode="markers",
-        marker=dict(color="#9ec5f4", size=5,
+        marker=dict(color="#9ec5f4", size=4, opacity=0.5,
                     line=dict(color="#ffffff", width=0.5)),
         name="각 월 (1881~)",
         hovertemplate="CAPE %{x:.1f} → 이후 10년 연 %{y:.1f}%<extra></extra>",
     )
 )
+# 90% band, then 50% band, then the conditional median on top.
+fig.add_trace(go.Scatter(x=cq.index, y=cq["q95"], mode="lines", line=dict(width=0),
+                         showlegend=False, hoverinfo="skip"))
+fig.add_trace(go.Scatter(x=cq.index, y=cq["q5"], mode="lines", fill="tonexty",
+                         fillcolor="rgba(28,92,171,0.10)", line=dict(width=0),
+                         name="역사적 90% 구간", hoverinfo="skip"))
+fig.add_trace(go.Scatter(x=cq.index, y=cq["q75"], mode="lines", line=dict(width=0),
+                         showlegend=False, hoverinfo="skip"))
+fig.add_trace(go.Scatter(x=cq.index, y=cq["q25"], mode="lines", fill="tonexty",
+                         fillcolor="rgba(28,92,171,0.18)", line=dict(width=0),
+                         name="역사적 50% 구간", hoverinfo="skip"))
+fig.add_trace(go.Scatter(x=cq.index, y=cq["q50"], mode="lines", name="조건부 중앙값",
+                         line=dict(color="#1c5cab", width=2.5),
+                         hovertemplate="CAPE %{x:.1f}일 때 중앙값 연 %{y:.1f}%<extra></extra>"))
 fig.add_vline(x=current_cape, line_color="#c22f2f", line_width=2)
 fig.add_annotation(x=current_cape, y=1, yref="paper", yanchor="bottom",
                    text=f"현재 CAPE {current_cape:.1f}", font=dict(color="#c22f2f"),
@@ -81,14 +99,25 @@ fig.add_annotation(x=current_cape, y=1, yref="paper", yanchor="bottom",
 fig.add_hline(y=0, line_color=webui.MUTED, line_width=1, line_dash="dot")
 fig.update_layout(
     xaxis_title="그 시점의 CAPE", yaxis_title="이후 10년 실질 총수익률 (연환산 %)",
-    showlegend=False,
 )
-webui.base_layout(fig, height=440)
+webui.base_layout(fig, height=460)
 fig.update_layout(hovermode="closest")
 st.plotly_chart(fig, use_container_width=True)
+
+# Read the conditional distribution off the fan at today's CAPE.
+grid = cq.dropna()
+if grid.index.min() <= current_cape <= grid.index.max():
+    q_now = {c: float(np.interp(current_cape, grid.index, grid[c])) for c in grid.columns}
+    st.info(
+        f"**지금 CAPE({current_cape:.1f})와 비슷했던 과거 국면들의 이후 10년 실질수익률** — "
+        f"중앙값 **연 {q_now['q50']:+.1f}%**, 절반은 연 {q_now['q25']:+.1f}%~{q_now['q75']:+.1f}% 사이, "
+        f"90%는 연 {q_now['q5']:+.1f}%~{q_now['q95']:+.1f}% 사이였습니다. "
+        "(커널 가중 분위 추정 — 예측이 아니라 역사적 조건부 분포입니다)"
+    )
 st.caption(
-    "우하향 **경향**은 분명하지만 같은 CAPE에서도 결과가 크게 흩어집니다 — "
-    "그래서 '기대치 조정'에는 유용해도 '예측'은 아닙니다."
+    "우하향 **경향**은 분명하지만 같은 CAPE에서도 결과의 폭(음영)이 넓습니다 — "
+    "그래서 '기대치 조정'에는 유용해도 '예측'은 아닙니다. 참고: 인접한 달들의 10년 "
+    "수익률 구간은 서로 겹치므로 점들은 독립 표본이 아닙니다."
 )
 
 # --------------------------------------------------------- per-indicator guide

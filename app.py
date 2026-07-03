@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from valueindex import registry, stats, webui
+from valueindex import quant, registry, stats, webui
 
 st.set_page_config(page_title="ValueIndex — 밸류에이션 개요", page_icon="📊", layout="wide")
 
@@ -47,6 +47,69 @@ asof: pd.Timestamp = min(st.session_state.get("asof", latest), latest)
 snapshot_mode = asof < latest - pd.DateOffset(months=1)
 if snapshot_mode:
     st.warning(f"🕰️ **{asof:%Y년 %m월} 시점 스냅샷**을 보고 있습니다. '현재' 버튼으로 돌아올 수 있습니다.")
+
+# -------------------------------------------------------- PCA composite index
+# Computed on data up to `asof` only, so the time machine stays free of
+# look-ahead (weights, means, and stds are re-fit on the truncated history).
+aligned_z_panel = pd.DataFrame(
+    {
+        k: (stats.zscore(panel[k].loc[:asof].dropna())
+            * (1 if registry.INDICATORS[k].higher_is_expensive else -1))
+        for k in registry.VALUATION_KEYS
+    }
+)
+pca = quant.pca_composite(aligned_z_panel)
+pca_series = pca.composite
+pca_now = float(pca_series.iloc[-1])
+pca_rating = stats.rating(pca_now)
+
+st.subheader("종합 밸류에이션 지수 (PCA)")
+c_metric, c_chart = st.columns([1, 3])
+with c_metric:
+    st.metric(
+        "종합 지수 (σ)", f"{pca_now:+.2f}",
+        help="9개 지표에서 주성분 분석(PCA)으로 추출한 공통 성분입니다. "
+        "0 = 역사 평균, +2σ 이상 = 역사적 극단 고평가.",
+    )
+    st.markdown(webui.rating_badge(pca_rating), unsafe_allow_html=True)
+    st.caption(
+        f"이 한 축이 지표 전체 변동의 {pca.explained_ratio * 100:.0f}%를 "
+        "설명합니다 — 지표들이 결국 같은 것을 재고 있다는 수학적 증거입니다."
+    )
+with c_chart:
+    pfig = go.Figure()
+    for level in (2, 1, -1, -2):
+        pfig.add_hline(y=level, line_color=webui.MUTED, line_width=1,
+                       line_dash="dot", opacity=0.4)
+    pfig.add_hline(y=0, line_color=webui.MUTED, line_width=1, opacity=0.6)
+    pfig.add_trace(go.Scatter(
+        x=pca_series.index, y=pca_series.values, mode="lines", name="종합 지수",
+        line=dict(color="#2a78d6", width=2),
+        hovertemplate="%{x|%Y-%m}: %{y:+.2f}σ<extra></extra>",
+    ))
+    pfig.add_trace(go.Scatter(
+        x=[pca_series.index[-1]], y=[pca_now], mode="markers",
+        marker=dict(color=pca_rating.color, size=10), showlegend=False,
+        hovertemplate=f"현재 {pca_now:+.2f}σ<extra></extra>",
+    ))
+    pfig.update_layout(yaxis_title="종합 고평가 지수 (σ)", showlegend=False)
+    webui.base_layout(pfig, height=260)
+    st.plotly_chart(pfig, use_container_width=True)
+
+with st.expander("이 지수는 어떻게 계산되나요?"):
+    st.markdown(
+        "9개 지표를 방향 정렬(높을수록 고평가)한 z-score 행렬의 상관행렬을 "
+        "**고유값 분해**해서 제1주성분(가장 많은 공통 변동을 담는 축)을 추출합니다. "
+        "지표별 가중치는 데이터가 스스로 정한 것이며, 시작 시점이 다른 지표는 "
+        "그 달에 존재하는 지표만으로 점수를 계산합니다(가중치 재정규화)."
+    )
+    wdf = pd.DataFrame({
+        "지표": [registry.INDICATORS[k].label_ko for k in pca.weights.index],
+        "가중치": pca.weights.round(3).values,
+    }).sort_values("가중치", ascending=False)
+    st.dataframe(wdf, hide_index=True, use_container_width=True)
+
+st.divider()
 
 # ------------------------------------------------------------------- summaries
 FMT = {"배": "{:.1f}", "%": "{:.2f}", "%p": "{:.2f}", "비율": "{:.2f}"}

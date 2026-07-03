@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import plotly.graph_objects as go
 import streamlit as st
 
-from valueindex import registry, stats, webui
+from valueindex import quant, registry, stats, webui
 
 st.set_page_config(page_title="지표 상세", page_icon="🔍", layout="wide")
 panel, statuses, extras = webui.get_data()
@@ -32,11 +32,20 @@ st.markdown(
 )
 st.caption(f"{meta.what_ko} ({direction} · 출처: {meta.source})")
 
-c1, c2, c3, c4 = st.columns(4)
+half_life = quant.ar1_half_life_months(s)
+
+c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("현재값", f"{summ.current:,.2f} {meta.unit}", help=f"기준: {summ.asof:%Y-%m}")
 c2.metric("역사 평균", f"{summ.mean:,.2f}")
 c3.metric("고평가 백분위", f"{webui.aligned_pctile(key, summ.pctile):.0f} / 100")
 c4.metric("z-score (방향 정렬)", f"{z:+.2f}σ")
+c5.metric(
+    "평균회귀 반감기",
+    f"약 {half_life / 12:.1f}년" if half_life else "회귀 성향 약함",
+    help="AR(1) 확률과정 적합으로 추정한, 평균에서의 이탈이 절반으로 줄어드는 데 "
+    "걸리는 기대 시간입니다. 수년 단위라는 것이 핵심 — 고평가/저평가 상태는 "
+    "몇 달이 아니라 몇 년씩 지속되는 경향이 있습니다. (근사 추정치입니다)",
+)
 
 # ------------------------------------------------------------- history + bands
 band = stats.bands(s)
