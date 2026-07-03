@@ -5,6 +5,8 @@ badge so the dashboard can show where its data came from.
 """
 from __future__ import annotations
 
+import time
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import Callable
 
@@ -82,5 +84,39 @@ def load_source(name: str, force: bool = False) -> tuple[pd.DataFrame, DataStatu
     raise RuntimeError(f"source {name!r}: no live data, no cache, no sample")
 
 
+def _sample_or_stale(name: str) -> tuple[pd.DataFrame, DataStatus]:
+    stale = cache.get_stale(name)
+    if stale is not None:
+        return stale, DataStatus.STALE_CACHE
+    sample = _load_sample(name)
+    if sample is not None:
+        return sample, DataStatus.SAMPLE
+    return pd.DataFrame(), DataStatus.SAMPLE
+
+
 def load_all(force: bool = False) -> dict[str, tuple[pd.DataFrame, DataStatus]]:
-    return {name: load_source(name, force=force) for name in SOURCES}
+    """Load every source, bounded by a total wall-clock budget.
+
+    Offline mode is trivially fast (no network), so it stays sequential.
+    Online, sources are fetched in parallel and any that don't finish
+    within ``config.LOAD_BUDGET`` seconds fall back to cache/sample — this
+    keeps the first cold load snappy on Streamlit Cloud even when a few
+    sources are slow or blocked.
+    """
+    if config.OFFLINE:
+        return {name: load_source(name, force=force) for name in SOURCES}
+
+    results: dict[str, tuple[pd.DataFrame, DataStatus]] = {}
+    executor = ThreadPoolExecutor(max_workers=min(len(SOURCES), 12))
+    futures = {name: executor.submit(load_source, name, force) for name in SOURCES}
+    deadline = time.monotonic() + config.LOAD_BUDGET
+    for name, fut in futures.items():
+        remaining = max(0.1, deadline - time.monotonic())
+        try:
+            results[name] = fut.result(timeout=remaining)
+        except Exception:  # timeout or fetch error -> cache/sample fallback
+            results[name] = _sample_or_stale(name)
+    # Don't block on stragglers; their sockets time out on their own and any
+    # late success still warms the on-disk cache for the next load.
+    executor.shutdown(wait=False)
+    return results

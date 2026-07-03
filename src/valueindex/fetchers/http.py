@@ -1,25 +1,30 @@
-"""Shared requests session with browser UA, timeout, and simple retries."""
+"""Shared requests session with browser UA, timeout, and simple retries.
+
+The session is thread-local so the parallel loader (loader.load_all) can
+fetch sources concurrently without sharing a non-thread-safe Session.
+"""
 from __future__ import annotations
 
+import threading
 import time
 
 import requests
 
 from .. import config
 
-_session: requests.Session | None = None
+_local = threading.local()
 
 
 def get_session() -> requests.Session:
-    global _session
-    if _session is None:
+    s = getattr(_local, "session", None)
+    if s is None:
         s = requests.Session()
         s.headers.update({"User-Agent": config.USER_AGENT})
-        _session = s
-    return _session
+        _local.session = s
+    return s
 
 
-def get(url: str, retries: int = 2) -> requests.Response:
+def get(url: str, retries: int = 1) -> requests.Response:
     last_exc: Exception | None = None
     for attempt in range(retries + 1):
         try:

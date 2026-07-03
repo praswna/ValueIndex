@@ -85,7 +85,11 @@ CACHE_TTL = {
     "aaii": timedelta(days=7),
 }
 
-REQUEST_TIMEOUT = 30
+REQUEST_TIMEOUT = 15
+# Hard wall-clock budget (seconds) for the first cold load of all sources.
+# Sources that don't finish in time fall back to bundled sample data so the
+# app always renders quickly (esp. on Streamlit Cloud). Override via env.
+LOAD_BUDGET = float(os.environ.get("VALUEINDEX_LOAD_BUDGET", "25"))
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/125.0 Safari/537.36"
