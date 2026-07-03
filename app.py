@@ -196,6 +196,65 @@ table = pd.DataFrame(
 )
 st.dataframe(table, use_container_width=True, hide_index=True)
 
+# ------------------------------------------------------------ nearest analogs
+st.subheader("🔎 오늘과 가장 닮은 과거")
+st.caption(
+    "9개 지표의 z-score 벡터가 현재와 가장 가까웠던 과거 국면들입니다 "
+    "(최근접 이웃 탐색 · 최근 5년 제외 · 같은 국면 중복 제거). "
+    "**역사가 반복된다는 뜻이 아니라**, '비슷한 상황에서 과거엔 무슨 일이 있었나'를 "
+    "보는 참고자료입니다."
+)
+analogs = quant.nearest_analogs(aligned_z_panel)
+tri = extras["real_tri"].loc[:asof]
+
+if analogs:
+    ana_rows = []
+    for a in analogs:
+        cape_then = panel["cape"].asof(a.date)
+        row = {
+            "시기": f"{a.date:%Y년 %m월}",
+            "지표당 차이": f"{a.distance:.2f}σ",
+            "그때 CAPE": f"{cape_then:.1f}" if pd.notna(cape_then) else "-",
+        }
+        for label, months in (("이후 1년", 12), ("이후 5년(연)", 60), ("이후 10년(연)", 120)):
+            base = tri.asof(a.date)
+            fut_idx = a.date + pd.DateOffset(months=months)
+            fut = tri.asof(fut_idx) if fut_idx <= tri.index[-1] else None
+            if fut and pd.notna(base) and base > 0:
+                ret = ((fut / base) ** (12 / months) - 1) * 100
+                row[label] = f"{ret:+.1f}%"
+            else:
+                row[label] = "-"
+        ana_rows.append(row)
+    st.dataframe(pd.DataFrame(ana_rows), hide_index=True, use_container_width=True)
+
+    # What came next: real total return indexed to 100 at each analog month.
+    st.markdown("**닮은 시점 이후 10년, 실제 경로** (실질 총수익, 시작 = 100)")
+    afig = go.Figure()
+    palette = ["#2a78d6", "#eda100", "#4a3aa7", "#008300"]
+    for color, a in zip(palette, analogs):
+        seg = tri.loc[a.date: a.date + pd.DateOffset(months=120)]
+        if len(seg) < 2:
+            continue
+        months_axis = [(d.year - a.date.year) * 12 + (d.month - a.date.month) for d in seg.index]
+        afig.add_trace(go.Scatter(
+            x=months_axis, y=(seg / seg.iloc[0] * 100).values, mode="lines",
+            name=f"{a.date:%Y-%m}", line=dict(color=color, width=2),
+            hovertemplate=f"{a.date:%Y-%m} + %{{x}}개월: %{{y:.0f}}<extra></extra>",
+        ))
+    afig.add_hline(y=100, line_color=webui.MUTED, line_width=1, line_dash="dot")
+    afig.update_layout(xaxis_title="닮은 시점 이후 경과 (개월)",
+                       yaxis_title="실질 총수익 지수 (시작=100)")
+    webui.base_layout(afig, height=380)
+    afig.update_layout(hovermode="x unified")
+    st.plotly_chart(afig, use_container_width=True)
+    st.caption(
+        "표본이 몇 개뿐이라 통계적 결론은 불가능합니다 — 경로들이 서로 크게 다르다는 것 "
+        "자체가 교훈입니다(비슷한 밸류에이션에서도 미래는 갈라집니다)."
+    )
+else:
+    st.info("비교할 수 있는 과거 데이터가 부족합니다.")
+
 # -------------------------------------------------------------------- download
 csv = panel.to_csv().encode("utf-8")
 st.download_button(

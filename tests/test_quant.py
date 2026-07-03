@@ -74,6 +74,44 @@ class TestPcaComposite:
         assert abs(res.composite.std() - 1) < 0.01
 
 
+class TestNearestAnalogs:
+    def _panel(self):
+        rng = np.random.default_rng(21)
+        idx = monthly_index(900)  # 1950-2024
+        z = pd.DataFrame(rng.normal(0, 1, (900, 5)), index=idx,
+                         columns=list("abcde"))
+        # Plant an exact twin of the last row far in the past.
+        z.iloc[100] = z.iloc[-1]
+        return z
+
+    def test_planted_twin_is_top_analog(self):
+        z = self._panel()
+        analogs = quant.nearest_analogs(z)
+        assert analogs[0].date == z.index[100]
+        assert analogs[0].distance == pytest.approx(0.0)
+
+    def test_recent_months_excluded(self):
+        z = self._panel()
+        z.iloc[-3] = z.iloc[-1]  # trivially similar recent month
+        analogs = quant.nearest_analogs(z, exclude_recent_months=60)
+        assert all(a.date < z.index[-60] for a in analogs)
+
+    def test_separation_between_analogs(self):
+        z = self._panel()
+        z.iloc[101] = z.iloc[-1]  # adjacent near-twin should be suppressed
+        analogs = quant.nearest_analogs(z, min_separation_months=36)
+        dates = [a.date for a in analogs]
+        for i, d1 in enumerate(dates):
+            for d2 in dates[i + 1:]:
+                assert abs((d1 - d2).days) >= 36 * 30
+
+    def test_nan_dims_use_shared_only(self):
+        z = self._panel()
+        z.iloc[:400, 3:] = np.nan  # early rows have only 3 of 5 indicators
+        analogs = quant.nearest_analogs(z, min_shared=3)
+        assert len(analogs) > 0  # early rows still eligible via shared dims
+
+
 class TestHalfLife:
     def test_recovers_known_phi(self):
         # Half-life is very sensitive near phi=1, so test a moderately

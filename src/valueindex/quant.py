@@ -97,6 +97,55 @@ def pca_composite(aligned_z: pd.DataFrame, min_series: int = 4) -> PcaComposite:
 
 
 # ---------------------------------------------------------------------------
+# Nearest historical analogs (z-space nearest-neighbor search)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Analog:
+    date: pd.Timestamp
+    distance: float      # RMS difference per shared indicator, in sigmas
+    shared: int          # number of indicators available in both months
+
+
+def nearest_analogs(
+    aligned_z: pd.DataFrame,
+    n: int = 4,
+    min_separation_months: int = 36,
+    exclude_recent_months: int = 60,
+    min_shared: int = 4,
+) -> list[Analog]:
+    """Historical months most similar to the latest month in indicator space.
+
+    Distance is the RMS z-score difference over indicators present in BOTH
+    months (indicators start at different dates). The most recent
+    `exclude_recent_months` are excluded (trivially similar), and picked
+    analogs must be `min_separation_months` apart so one episode doesn't
+    fill every slot.
+    """
+    target = aligned_z.iloc[-1]
+    hist = aligned_z.iloc[:-1]
+    if exclude_recent_months:
+        hist = hist.iloc[:-exclude_recent_months]
+    if hist.empty:
+        return []
+
+    diff_sq = (hist - target) ** 2
+    shared = diff_sq.notna().sum(axis=1)
+    dist = np.sqrt(diff_sq.mean(axis=1, skipna=True))
+    dist[shared < min_shared] = np.nan
+
+    picked: list[Analog] = []
+    for date, d in dist.dropna().sort_values().items():
+        if any(abs((date - p.date).days) < min_separation_months * 30 for p in picked):
+            continue
+        picked.append(Analog(date=date, distance=float(d), shared=int(shared[date])))
+        if len(picked) >= n:
+            break
+    return picked
+
+
+# ---------------------------------------------------------------------------
 # C. AR(1) mean-reversion half-life
 # ---------------------------------------------------------------------------
 
