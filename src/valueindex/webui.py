@@ -26,6 +26,10 @@ SERIES_COLORS = {
     "hy_spread": "#e34948",
     "gold": "#eda100",
     "wti": "#008300",
+    "fear_greed": "#2a78d6",
+    "aaii_spread": "#4a3aa7",
+    "margin_debt": "#e34948",
+    "umcsent": "#008300",
 }
 
 GRID = "#e1e0d9"
@@ -64,6 +68,10 @@ def _load(force: bool = False):
             "hy_spread": indicators.to_monthly(frames["fred_BAMLH0A0HYM2"], how="mean"),
             "gold": frames["stooq_gold"].set_index("date")["close"].resample("MS").mean(),
             "wti": indicators.to_monthly(frames["fred_DCOILWTICO"], how="mean"),
+            "fear_greed": indicators.to_monthly(frames["cnn_fear_greed"], how="mean"),
+            "aaii_spread": indicators.to_monthly(frames["aaii_sentiment"], how="mean"),
+            "margin_debt": indicators.to_monthly(frames["finra_margin_debt"]),
+            "umcsent": indicators.to_monthly(frames["fred_UMCSENT"]),
         },
     }
     return panel, statuses, extras

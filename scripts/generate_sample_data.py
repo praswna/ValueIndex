@@ -179,6 +179,50 @@ def gen_fred() -> dict[str, pd.DataFrame]:
         2014.5: 100, 2016.1: 30, 2018.7: 70, 2020.3: 17, 2022.4: 110,
         2024.0: 78, 2026.5: 70,
     }, log=True, noise=0.015))
+
+    ums_idx = pd.date_range("1978-01-01", "2026-06-01", freq="MS")
+    out["fred_UMCSENT"] = fred_frame(ums_idx, interp(ums_idx, {
+        1978.0: 65, 1980.4: 52, 1984.0: 96, 1990.9: 63, 1994.0: 91,
+        2000.0: 110, 2003.2: 78, 2007.0: 96, 2008.11: 55, 2011.8: 55,
+        2015.0: 93, 2020.2: 101, 2020.4: 72, 2022.5: 50, 2024.0: 70,
+        2026.5: 60,
+    }, noise=0.01))
+    return out
+
+
+# --------------------------------------------------------------- sentiment ----
+def gen_sentiment() -> dict[str, pd.DataFrame]:
+    out = {}
+    margin_idx = pd.date_range("1997-01-01", "2026-05-01", freq="MS")
+    margin = interp(margin_idx, {
+        1997.0: 100, 2000.2: 280, 2002.8: 130, 2007.6: 380, 2009.1: 175,
+        2015.0: 500, 2020.3: 480, 2021.8: 935, 2022.11: 600, 2024.5: 800,
+        2026.4: 1000,
+    }, log=True, noise=0.008)
+    out["finra_margin_debt"] = pd.DataFrame(
+        {"date": margin_idx, "value": margin.values.round(1)}
+    )
+
+    fg_idx = pd.bdate_range("2021-01-04", "2026-06-30")
+    fg = interp(fg_idx, {
+        2021.1: 65, 2021.9: 45, 2022.1: 30, 2022.5: 12, 2022.9: 20,
+        2023.2: 60, 2023.10: 25, 2024.1: 70, 2024.8: 30, 2025.0: 55,
+        2025.4: 22, 2026.0: 60, 2026.5: 48,
+    }, noise=0.05).clip(3, 97)
+    out["cnn_fear_greed"] = pd.DataFrame(
+        {"date": fg_idx, "value": fg.values.round(0)}
+    )
+
+    aaii_idx = pd.date_range("1987-07-02", "2026-06-25", freq="W-THU")
+    aaii = interp(aaii_idx, {
+        1987.6: 10, 1987.9: -20, 1990.9: -30, 1993.0: 15, 2000.1: 40,
+        2003.2: -20, 2007.8: 15, 2009.2: -51, 2013.0: 30, 2016.1: -15,
+        2018.1: 35, 2020.3: -30, 2021.4: 35, 2022.7: -43, 2024.0: 25,
+        2025.3: -20, 2026.5: 8,
+    }, noise=0.15)
+    out["aaii_sentiment"] = pd.DataFrame(
+        {"date": aaii_idx, "value": aaii.values.round(1)}
+    )
     return out
 
 
@@ -289,6 +333,7 @@ def main() -> None:
     sh = gen_shiller()
     frames: dict[str, pd.DataFrame] = {"shiller": sh, "aiae_inputs": gen_aiae()}
     frames.update(gen_fred())
+    frames.update(gen_sentiment())
     frames.update(gen_multpl(sh))
     frames.update(gen_stooq(sh))
     for name, df in frames.items():

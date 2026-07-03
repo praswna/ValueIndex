@@ -34,7 +34,16 @@ FRED_SERIES = {
     "t10y2y": "T10Y2Y",              # 10Y minus 2Y Treasury spread, daily, pct points
     "hy_spread": "BAMLH0A0HYM2",     # ICE BofA US High Yield OAS, daily, pct points
     "wti": "DCOILWTICO",             # WTI crude oil spot, daily, USD/bbl
+    "umcsent": "UMCSENT",            # U. Michigan consumer sentiment, monthly
 }
+
+# --- Sentiment sources (no official APIs; parsers are tolerant and fall
+# back to cache/sample data when the page formats change) -----------------------
+FINRA_MARGIN_URL = (
+    "https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics"
+)
+CNN_FEAR_GREED_URL = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+AAII_SENTIMENT_URL = "https://www.aaii.com/files/surveys/sentiment.xls"
 
 # AIAE (aggregate investor allocation to equities), quarterly Z.1 series.
 # Formula (Philosophical Economics): equities / (equities + liabilities of
@@ -71,6 +80,9 @@ CACHE_TTL = {
     "multpl": timedelta(days=1),
     "stooq": timedelta(days=1),
     "aiae_inputs": timedelta(days=7),
+    "finra": timedelta(days=7),
+    "cnn": timedelta(days=1),
+    "aaii": timedelta(days=7),
 }
 
 REQUEST_TIMEOUT = 30

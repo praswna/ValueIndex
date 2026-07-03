@@ -11,7 +11,7 @@ from typing import Callable
 import pandas as pd
 
 from . import cache, config
-from .fetchers import fred, multpl, shiller, stooq
+from .fetchers import fred, multpl, sentiment, shiller, stooq
 
 
 class DataStatus(str, Enum):
@@ -25,6 +25,9 @@ class DataStatus(str, Enum):
 SOURCES: dict[str, tuple[Callable[[], pd.DataFrame], str]] = {
     "shiller": (shiller.fetch_shiller, "shiller"),
     "aiae_inputs": (fred.fetch_aiae_inputs, "aiae_inputs"),
+    "finra_margin_debt": (sentiment.fetch_margin_debt, "finra"),
+    "cnn_fear_greed": (sentiment.fetch_fear_greed, "cnn"),
+    "aaii_sentiment": (sentiment.fetch_aaii, "aaii"),
     **{
         f"fred_{sid}": ((lambda s=sid: fred.fetch_series(s)), "fred")
         for sid in config.FRED_SERIES.values()

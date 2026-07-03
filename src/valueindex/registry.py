@@ -21,6 +21,7 @@ class IndicatorMeta:
     formula_ko: str = ""         # formula in plain text / latex
     interpret_ko: str = ""       # how to read high/low + famous episodes
     caveats_ko: tuple[str, ...] = field(default_factory=tuple)
+    group: str = "macro"         # context grouping: "macro" | "sentiment"
 
 
 INDICATORS: dict[str, IndicatorMeta] = {
@@ -260,6 +261,63 @@ INDICATORS: dict[str, IndicatorMeta] = {
         interpret_ko="재는 것: 에너지 비용 충격. 유가 급등은 1973, 1979, 1990, 2008년 등 여러 침체에 "
         "선행했습니다. 재지 않는 것: 주식 밸류에이션 — 유가는 수요(경기)와 공급(지정학)이 뒤섞여 "
         "해석이 어렵고, 적정 가격의 기준점도 없습니다.",
+    ),
+    # ---- sentiment indicators (investor psychology, no valuation rating) ----
+    "fear_greed": IndicatorMeta(
+        key="fear_greed",
+        label_ko="CNN 공포·탐욕 지수",
+        label_en="CNN Fear & Greed",
+        unit="pt",
+        category="context",
+        higher_is_expensive=False,
+        source="CNN (비공식 엔드포인트)",
+        what_ko="모멘텀·풋/콜·VIX 등 7가지 시장 행동을 합성한 0(극단적 공포)~100(극단적 탐욕) 지수입니다.",
+        interpret_ko="재는 것: 시장 참여자들의 종합 감정 온도. 20 아래(극단적 공포)와 80 위(극단적 탐욕)가 "
+        "주목 구간이며, 극단은 역발상 신호로 읽는 것이 관례입니다. 재지 않는 것: 방향과 시점 — "
+        "탐욕이 몇 달씩 지속되기도 합니다. 내 감정이 시장과 같은 방향인지 확인하는 거울로 쓰세요.",
+        group="sentiment",
+    ),
+    "aaii_spread": IndicatorMeta(
+        key="aaii_spread",
+        label_ko="AAII 강세-약세 스프레드",
+        label_en="AAII Bull-Bear Spread",
+        unit="%p",
+        category="context",
+        higher_is_expensive=False,
+        source="AAII 주간 설문",
+        what_ko="미국 개인투자자에게 '향후 6개월 강세? 약세?'를 물은 주간 설문의 강세 비율 − 약세 비율입니다.",
+        interpret_ko="재는 것: 개인투자자들이 '말하는' 심리. 역사 평균은 약 +6%p이고, ±30%p를 넘는 극단이 "
+        "역발상 신호로 유명합니다(2009년 3월 바닥에서 −51%p). 재지 않는 것: 평상시 값의 의미 — "
+        "극단이 아닐 때는 소음에 가깝고, 말은 돈의 행동(포지셔닝)보다 신호가 약합니다.",
+        group="sentiment",
+    ),
+    "margin_debt": IndicatorMeta(
+        key="margin_debt",
+        label_ko="신용융자 잔고 (마진 부채)",
+        label_en="FINRA Margin Debt",
+        unit="$B",
+        category="context",
+        higher_is_expensive=False,
+        source="FINRA 월간 통계",
+        what_ko="미국 투자자들이 증권사에서 빚내서 주식을 산 총액 — 탐욕의 가장 직접적인 계량입니다.",
+        interpret_ko="재는 것: 돈으로 실행된 낙관(레버리지). 급증 후의 고점이 2000년, 2007년, 2021년 시장 "
+        "고점과 잘 겹쳤습니다. 재지 않는 것: 절대 수준의 의미 — 시장 규모와 함께 자연 증가하므로 "
+        "수준보다 증가 속도(전년 대비 급증/급감)를 보는 것이 관례입니다.",
+        group="sentiment",
+    ),
+    "umcsent": IndicatorMeta(
+        key="umcsent",
+        label_ko="미시간대 소비자심리지수",
+        label_en="UMich Consumer Sentiment",
+        unit="pt",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (미시간대)",
+        what_ko="미국 가계가 경기와 살림살이를 어떻게 체감하는지 묻는 월간 설문입니다.",
+        interpret_ko="재는 것: 소비자(투자자가 아니라)의 경기 체감. 침체기에 급락하고, 역사적 최저권 "
+        "(예: 2022년 6월)이 오히려 주식의 나쁘지 않은 진입 시점과 겹치곤 했습니다 — 심리 지표의 "
+        "역발상 성질입니다. 재지 않는 것: 주식 밸류에이션이나 단기 방향.",
+        group="sentiment",
     ),
 }
 

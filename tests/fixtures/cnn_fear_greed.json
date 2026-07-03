@@ -1,0 +1,13 @@
+{
+  "fear_and_greed": {"score": 48.0, "rating": "neutral", "timestamp": "2026-07-02T23:59:56+00:00"},
+  "fear_and_greed_historical": {
+    "timestamp": 1751500796000,
+    "score": 48.0,
+    "rating": "neutral",
+    "data": [
+      {"x": 1751241600000, "y": 45.2, "rating": "neutral"},
+      {"x": 1751328000000, "y": 46.8, "rating": "neutral"},
+      {"x": 1751414400000, "y": 48.0, "rating": "neutral"}
+    ]
+  }
+}
