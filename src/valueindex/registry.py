@@ -1,0 +1,275 @@
+"""Indicator metadata registry: labels, direction, and beginner explanations.
+
+All UI-facing text lives here (or in content/*.md), never in page code.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+
+@dataclass(frozen=True)
+class IndicatorMeta:
+    key: str
+    label_ko: str
+    label_en: str
+    unit: str                    # "배", "%", "비율"
+    category: str                # "valuation" | "context"
+    higher_is_expensive: bool    # direction for the aligned expensiveness view
+    source: str
+    what_ko: str                 # one-line definition
+    analogy_ko: str = ""         # intuitive analogy
+    formula_ko: str = ""         # formula in plain text / latex
+    interpret_ko: str = ""       # how to read high/low + famous episodes
+    caveats_ko: tuple[str, ...] = field(default_factory=tuple)
+
+
+INDICATORS: dict[str, IndicatorMeta] = {
+    "cape": IndicatorMeta(
+        key="cape",
+        label_ko="Shiller CAPE",
+        label_en="Shiller CAPE",
+        unit="배",
+        category="valuation",
+        higher_is_expensive=True,
+        source="Robert Shiller (Yale)",
+        what_ko="지난 10년 평균 실질 이익 대비 현재 주가가 몇 배인지 재는 지표입니다.",
+        analogy_ko="학생을 한 번의 시험 점수가 아니라 10년치 평균 성적으로 평가하는 것과 같습니다. "
+        "경기가 좋은 해와 나쁜 해의 이익 변동을 평균으로 눌러서, 주가가 '진짜 실력' 대비 비싼지 봅니다.",
+        formula_ko="CAPE = 현재 주가 ÷ 최근 10년 인플레이션 조정 평균 주당순이익(EPS)",
+        interpret_ko="역사적 평균은 약 17배입니다. 1929년 대공황 직전 약 30배, 2000년 닷컴 버블 정점 약 44배, "
+        "2009년 금융위기 바닥 약 13배였습니다. 높을수록 이후 10년의 평균 수익률이 낮았던 경향이 있습니다.",
+        caveats_ko=(
+            "1990년대 이후 회계기준(GAAP) 변화로 과거와 단순 비교하면 과대평가되는 경향이 있습니다.",
+            "금리를 반영하지 않습니다 — 저금리 시대에는 높은 CAPE가 정당화될 수 있습니다.",
+            "1990년대 중반부터 계속 '고평가'였지만 시장은 수년 더 올랐습니다. 타이밍 도구가 아닙니다.",
+        ),
+    ),
+    "ecy": IndicatorMeta(
+        key="ecy",
+        label_ko="초과 CAPE 수익률 (ECY)",
+        label_en="Excess CAPE Yield",
+        unit="%p",
+        category="valuation",
+        higher_is_expensive=False,
+        source="Robert Shiller (Yale)",
+        what_ko="주식의 기대수익률(1/CAPE)이 실질 국채금리보다 얼마나 높은지 재는 지표입니다.",
+        analogy_ko="예금 이자와 월세 수익률을 비교하는 것과 같습니다. 주식이 채권보다 얼마나 더 "
+        "'이자'를 주는지를 보면, 주식이 채권 대비 상대적으로 매력적인지 알 수 있습니다.",
+        formula_ko="ECY = (1 ÷ CAPE) × 100 − 실질 10년 국채금리",
+        interpret_ko="높을수록 주식이 채권 대비 쌉니다(저평가). CAPE가 높아도 금리가 매우 낮으면 ECY는 "
+        "괜찮을 수 있습니다 — 2010년대가 그랬습니다. Shiller 교수가 '고CAPE 시대'를 설명하려고 도입했습니다.",
+        caveats_ko=(
+            "금리가 급변하면 빠르게 바뀝니다. 2022년 금리 급등 때 ECY가 급락했습니다.",
+            "채권 대비 상대 매력만 알려줄 뿐, 둘 다 비쌀 수도 있습니다.",
+        ),
+    ),
+    "buffett": IndicatorMeta(
+        key="buffett",
+        label_ko="버핏지수",
+        label_en="Buffett Indicator",
+        unit="비율",
+        category="valuation",
+        higher_is_expensive=True,
+        source="FRED (미 연준)",
+        what_ko="미국 주식시장 전체 크기가 미국 경제(GDP) 대비 몇 배인지 재는 지표입니다.",
+        analogy_ko="가게의 매출은 그대로인데 가게 권리금만 계속 오른다면 이상하겠죠. 주식시장 전체 "
+        "가격표(시가총액)를 실제 경제 활동(GDP)과 비교하는 것입니다.",
+        formula_ko="버핏지수 = 기업 주식 시가총액 ÷ 명목 GDP",
+        interpret_ko="워런 버핏이 '단 하나의 지표를 꼽으라면 아마 이것'이라고 말해 유명해졌습니다. "
+        "1 미만이면 저평가, 2를 넘으면 역사적 극단으로 봅니다. 2000년 닷컴 정점 약 1.4, 2021년 약 2를 넘었습니다.",
+        caveats_ko=(
+            "이 앱은 비금융법인 주식 기준 근사치입니다(윌셔5000 데이터가 FRED에서 제거되어). 절대 수준보다 자체 역사 대비 위치로 보세요.",
+            "미국 기업의 해외 매출 비중이 늘어 GDP와의 비교가 과거보다 덜 정확해졌습니다.",
+        ),
+    ),
+    "pe": IndicatorMeta(
+        key="pe",
+        label_ko="S&P 500 후행 PER",
+        label_en="Trailing P/E",
+        unit="배",
+        category="valuation",
+        higher_is_expensive=True,
+        source="multpl.com",
+        what_ko="지난 1년 이익 대비 현재 주가가 몇 배인지 재는 가장 기본적인 지표입니다.",
+        analogy_ko="치킨집을 인수할 때 '연 순이익의 몇 배를 내야 하나'와 같습니다. PER 20배면 지금 "
+        "이익이 유지될 때 투자금 회수에 20년 걸린다는 뜻입니다.",
+        formula_ko="PER = 주가 ÷ 최근 12개월 주당순이익(EPS)",
+        interpret_ko="역사적 평균은 약 16배입니다. CAPE와 달리 최근 1년 이익만 쓰므로, 불황에 이익이 "
+        "급감하면 PER이 오히려 치솟는 왜곡이 있습니다(2009년 70배 초과).",
+        caveats_ko=(
+            "이익이 급변하는 침체기에는 신호가 크게 왜곡됩니다 — CAPE가 만들어진 이유입니다.",
+            "성장 기대가 높으면 높은 PER이 정당화될 수 있습니다.",
+        ),
+    ),
+    "pb": IndicatorMeta(
+        key="pb",
+        label_ko="S&P 500 PBR",
+        label_en="Price-to-Book",
+        unit="배",
+        category="valuation",
+        higher_is_expensive=True,
+        source="multpl.com",
+        what_ko="기업의 장부상 순자산 대비 주가가 몇 배인지 재는 지표입니다.",
+        analogy_ko="가게를 인수할 때 '설비·재고 등 자산 가치의 몇 배를 내는가'입니다. 1배면 자산 가격 "
+        "그대로, 4배면 자산의 4배를 내는 셈입니다.",
+        formula_ko="PBR = 주가 ÷ 주당순자산(BPS)",
+        interpret_ko="높을수록 자산 대비 비쌉니다. 다만 소프트웨어·브랜드 같은 무형자산 중심 경제가 되면서 "
+        "장부가의 의미가 과거보다 약해졌습니다.",
+        caveats_ko=(
+            "히스토리가 2000년경부터로 짧아 백분위·등급의 신뢰도가 낮습니다.",
+            "무형자산(브랜드, 특허, 소프트웨어)이 장부에 잘 안 잡혀 현대 기업에 불리한 잣대입니다.",
+        ),
+    ),
+    "div_yield": IndicatorMeta(
+        key="div_yield",
+        label_ko="S&P 500 배당수익률",
+        label_en="Dividend Yield",
+        unit="%",
+        category="valuation",
+        higher_is_expensive=False,
+        source="multpl.com",
+        what_ko="주가 대비 연간 배당금이 몇 %인지 — 주식의 '이자율'입니다.",
+        analogy_ko="부동산의 월세 수익률과 같습니다. 집값이 오르면(분모↑) 월세 수익률은 내려가죠. "
+        "배당수익률이 낮다는 건 주가가 배당 대비 비싸졌다는 뜻입니다.",
+        formula_ko="배당수익률 = 연간 주당 배당금 ÷ 주가 × 100",
+        interpret_ko="19세기~20세기 중반엔 4~6%가 보통이었으나 현대엔 1~2%대입니다. 낮을수록 고평가 "
+        "신호로 읽되, 자사주 매입이 배당을 대체한 구조 변화를 감안해야 합니다.",
+        caveats_ko=(
+            "1980년대 이후 기업들이 배당 대신 자사주 매입을 늘려, 과거와의 단순 비교는 고평가를 과장합니다.",
+        ),
+    ),
+    "fed_spread": IndicatorMeta(
+        key="fed_spread",
+        label_ko="Fed 모델 스프레드",
+        label_en="Fed Model Spread",
+        unit="%p",
+        category="valuation",
+        higher_is_expensive=False,
+        source="multpl + FRED",
+        what_ko="주식의 이익수익률(1/PER)이 10년 국채금리보다 얼마나 높은지 재는 지표입니다.",
+        analogy_ko="'주식이 주는 이자'와 '국채가 주는 이자'를 직접 비교하는 저울입니다. 저울이 주식 쪽으로 "
+        "기울수록(스프레드가 클수록) 주식이 상대적으로 매력적입니다.",
+        formula_ko="Fed 스프레드 = (100 ÷ PER) − 10년 국채금리",
+        interpret_ko="양수면 주식이 채권보다 높은 수익률을 제공합니다. 2000년 닷컴 정점에는 음수(주식이 "
+        "채권보다 못한 수익률)였습니다 — 강력한 경고 신호였죠.",
+        caveats_ko=(
+            "명목 금리와 실질 이익수익률을 비교하는 논리적 결함이 있어 학계 비판이 많습니다.",
+            "인플레이션이 높을 때 신호가 왜곡됩니다.",
+        ),
+    ),
+    "trend_dev": IndicatorMeta(
+        key="trend_dev",
+        label_ko="장기 추세 이탈도",
+        label_en="Trend Deviation",
+        unit="%",
+        category="valuation",
+        higher_is_expensive=True,
+        source="Shiller 실질가격 (계산)",
+        what_ko="150년 실질 주가의 장기 성장 추세선 대비 현재 주가가 몇 % 위/아래인지 재는 지표입니다.",
+        analogy_ko="아이의 키 성장곡선과 같습니다. 표준 성장곡선보다 한참 위면 일시적으로 웃자란 것일 수 "
+        "있고, 시간이 지나며 곡선으로 되돌아오는 경향이 있습니다.",
+        formula_ko="추세 이탈도 = (실질 주가 ÷ 장기 로그선형 추세선 − 1) × 100",
+        interpret_ko="0%면 정확히 장기 추세 위, +100%면 추세의 2배입니다. 1929년, 2000년 정점이 "
+        "역사적 고점이었고 1932년, 1982년이 저점이었습니다.",
+        caveats_ko=(
+            "추세선 자체가 전체 데이터로 계산되므로 최근 값의 이탈도는 미래 데이터가 쌓이면 달라질 수 있습니다.",
+            "'추세로 돌아온다'는 보장은 없습니다 — 추세 자체가 이동하기도 합니다.",
+        ),
+    ),
+    "aiae": IndicatorMeta(
+        key="aiae",
+        label_ko="AIAE (투자자 주식배분 비율)",
+        label_en="Aggregate Investor Allocation to Equities",
+        unit="비율",
+        category="valuation",
+        higher_is_expensive=True,
+        source="FRED 자금순환표 (계산)",
+        what_ko="모든 투자자의 금융자산 중 주식이 차지하는 평균 비중입니다.",
+        analogy_ko="극장에 이미 모두 입장해 있으면 새로 들어올 관객이 없습니다. 모두가 이미 주식을 잔뜩 "
+        "들고 있다면(비중이 높다면), 주가를 더 밀어올릴 새 돈이 부족하다는 뜻입니다.",
+        formula_ko="AIAE = 주식 시가총액 ÷ (주식 시가총액 + 실물경제 총부채)",
+        interpret_ko="연구 블로그 Philosophical Economics가 발표한 뒤 '이후 10년 수익률과의 상관이 "
+        "CAPE보다 높다'고 알려져 유명해졌습니다. 역사적으로 대략 0.2~0.5 사이를 오갔습니다.",
+        caveats_ko=(
+            "분기 데이터라 갱신이 느립니다.",
+            "유명해진 뒤의 예측력은 발표 전 백테스트보다 낮을 수 있습니다(굿하트의 법칙).",
+        ),
+    ),
+    # ---- context indicators (market thermometer, no valuation rating) ----
+    "vix": IndicatorMeta(
+        key="vix",
+        label_ko="VIX 공포지수",
+        label_en="VIX",
+        unit="pt",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (CBOE)",
+        what_ko="옵션 가격에서 역산한, 시장이 예상하는 향후 30일 변동성입니다.",
+        interpret_ko="재는 것: 시장의 불안 심리. 20 미만이면 평온, 30 이상이면 공포, 2008년과 2020년엔 "
+        "80을 넘었습니다. 재지 않는 것: 방향 — VIX가 높다고 주가가 더 떨어진다는 뜻이 아닙니다. "
+        "역사적으로 VIX 급등 구간은 오히려 장기 매수 기회와 겹치는 경우가 많았습니다.",
+    ),
+    "t10y2y": IndicatorMeta(
+        key="t10y2y",
+        label_ko="장단기 금리차 (10Y−2Y)",
+        label_en="Yield Curve (10Y-2Y)",
+        unit="%p",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED",
+        what_ko="10년 국채금리에서 2년 국채금리를 뺀 값 — 경기 침체의 대표적 선행 신호입니다.",
+        interpret_ko="재는 것: 채권시장의 경기 전망. 음수(역전)가 되면 '가까운 미래가 지금보다 나쁠 것'이라는 "
+        "채권시장의 투표이며, 지난 수십 년 대부분의 침체에 선행했습니다. 재지 않는 것: 시점 — 역전 후 침체까지 "
+        "6개월~2년 이상 걸리기도 하고, 오지 않은 적도 있습니다.",
+    ),
+    "hy_spread": IndicatorMeta(
+        key="hy_spread",
+        label_ko="하이일드 스프레드",
+        label_en="High-Yield Spread",
+        unit="%p",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (ICE BofA)",
+        what_ko="신용등급이 낮은 회사채 금리가 국채보다 얼마나 높은지 — 신용시장의 공포 온도계입니다.",
+        interpret_ko="재는 것: 시장이 기업 부도 위험을 얼마나 걱정하는지. 3~4%p면 평온, 8%p를 넘으면 위기 "
+        "신호로 봅니다(2008년 20%p). 재지 않는 것: 주식 밸류에이션 — 주식이 싸든 비싸든 신용시장은 "
+        "별개로 움직일 수 있습니다.",
+    ),
+    "gold": IndicatorMeta(
+        key="gold",
+        label_ko="금 가격",
+        label_en="Gold",
+        unit="$/oz",
+        category="context",
+        higher_is_expensive=False,
+        source="Stooq",
+        what_ko="인플레이션 불안, 실질금리, 달러 신뢰도의 온도계입니다.",
+        interpret_ko="재는 것: 시장이 무엇을 무서워하는지 — 인플레이션, 통화가치 하락, 지정학 위험. "
+        "재지 않는 것: 금이 비싼지 싼지. 금은 이익도 배당도 없어 '적정 가격'의 기준점이 없으므로, "
+        "이 앱에서 고평가/저평가 등급을 매기지 않습니다.",
+    ),
+    "wti": IndicatorMeta(
+        key="wti",
+        label_ko="WTI 유가",
+        label_en="WTI Crude Oil",
+        unit="$/bbl",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED",
+        what_ko="경기와 인플레이션의 핵심 입력값인 국제 유가입니다.",
+        interpret_ko="재는 것: 에너지 비용 충격. 유가 급등은 1973, 1979, 1990, 2008년 등 여러 침체에 "
+        "선행했습니다. 재지 않는 것: 주식 밸류에이션 — 유가는 수요(경기)와 공급(지정학)이 뒤섞여 "
+        "해석이 어렵고, 적정 가격의 기준점도 없습니다.",
+    ),
+}
+
+VALUATION_KEYS = [k for k, m in INDICATORS.items() if m.category == "valuation"]
+CONTEXT_KEYS = [k for k, m in INDICATORS.items() if m.category == "context"]
+
+# Famous historical episodes for the time machine presets.
+TIME_MACHINE_PRESETS = {
+    "1929년 9월 (대공황 직전)": "1929-09-01",
+    "2000년 3월 (닷컴 버블 정점)": "2000-03-01",
+    "2009년 3월 (금융위기 바닥)": "2009-03-01",
+    "2021년 12월 (팬데믹 유동성 고점)": "2021-12-01",
+}
