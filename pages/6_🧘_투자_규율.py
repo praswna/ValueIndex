@@ -32,7 +32,7 @@ fig = go.Figure(
 fig.update_layout(yaxis_title="실질 총수익 기준 고점 대비 %", showlegend=False)
 webui.base_layout(fig, height=380)
 webui.add_recession_shading(fig, extras["usrec"], start=dd.index[0])
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.markdown(
     f"- 지난 140여 년 동안 **−50% 이상의 하락이 여러 번** 있었고, 매번 회복했습니다.\n"
     f"- 최악의 드로다운: **{dd.min():.0f}%** ({dd.idxmin():%Y년}).\n"

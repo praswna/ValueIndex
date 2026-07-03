@@ -102,7 +102,7 @@ fig.update_layout(
 )
 webui.base_layout(fig, height=460)
 fig.update_layout(hovermode="closest")
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # Read the conditional distribution off the fan at today's CAPE.
 grid = cq.dropna()

@@ -70,7 +70,7 @@ fig.add_trace(go.Scatter(x=[s.index[-1]], y=[s.iloc[-1]], mode="markers",
 fig.update_layout(yaxis_title=f"{meta.label_ko} ({meta.unit})")
 webui.base_layout(fig, height=460)
 webui.add_recession_shading(fig, extras["usrec"], start=s.index[0])
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ------------------------------------------------------------------- histogram
 st.subheader("역사적 분포에서 현재 위치")
@@ -85,7 +85,7 @@ hist.add_annotation(x=summ.current, y=1, yref="paper",
 hist.update_layout(xaxis_title=f"{meta.label_ko} ({meta.unit})", yaxis_title="개월 수")
 webui.base_layout(hist, height=320)
 hist.update_layout(hovermode="closest")
-st.plotly_chart(hist, use_container_width=True)
+st.plotly_chart(hist, width="stretch")
 
 # ----------------------------------------------------------------- explanation
 with st.expander("📖 이 지표 쉽게 이해하기", expanded=True):

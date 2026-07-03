@@ -63,7 +63,7 @@ fig.add_trace(go.Scatter(x=res.equity_curve.index, y=res.equity_curve.values,
                          line=dict(color="#eb6834", width=2)))
 fig.update_layout(yaxis_title="누적 배수 (시작 = 1)", yaxis_type="log")
 webui.base_layout(fig, height=440)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ------------------------------------------------------------- auto verdict
 verdicts = []

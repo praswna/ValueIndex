@@ -121,7 +121,7 @@ def sidebar(statuses: dict[str, str]) -> None:
                 newest = ci.fetched_at
         if newest is not None:
             st.caption(f"마지막 수집: {newest:%Y-%m-%d %H:%M} UTC")
-        if st.button("🔄 데이터 새로고침", use_container_width=True):
+        if st.button("🔄 데이터 새로고침", width="stretch"):
             st.session_state["force_refresh"] = True
             st.rerun()
         if config.OFFLINE:

@@ -51,7 +51,7 @@ def render_indicator(key: str) -> None:
         fig.update_layout(showlegend=False, yaxis_title=meta.unit)
         webui.base_layout(fig, height=260)
         webui.add_recession_shading(fig, extras["usrec"], start=s.index[0])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     st.markdown(meta.interpret_ko)
     st.divider()
 

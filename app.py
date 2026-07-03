@@ -30,10 +30,10 @@ with st.expander("🕰️ 역사 타임머신 — 과거 시점의 시장은 어
         "(당시 투자자가 알 수 있었던 정보만 사용)."
     )
     preset_cols = st.columns(len(registry.TIME_MACHINE_PRESETS) + 1)
-    if preset_cols[0].button("현재", use_container_width=True):
+    if preset_cols[0].button("현재", width="stretch"):
         st.session_state["asof"] = latest
     for col, (label, date_str) in zip(preset_cols[1:], registry.TIME_MACHINE_PRESETS.items()):
-        if col.button(label, use_container_width=True):
+        if col.button(label, width="stretch"):
             st.session_state["asof"] = pd.Timestamp(date_str)
     years = list(range(1900, latest.year + 1, 1))
     slider_year = st.select_slider(
@@ -94,7 +94,7 @@ with c_chart:
     ))
     pfig.update_layout(yaxis_title="종합 고평가 지수 (σ)", showlegend=False)
     webui.base_layout(pfig, height=260)
-    st.plotly_chart(pfig, use_container_width=True)
+    st.plotly_chart(pfig, width="stretch")
 
 with st.expander("이 지수는 어떻게 계산되나요?"):
     st.markdown(
@@ -107,7 +107,7 @@ with st.expander("이 지수는 어떻게 계산되나요?"):
         "지표": [registry.INDICATORS[k].label_ko for k in pca.weights.index],
         "가중치": pca.weights.round(3).values,
     }).sort_values("가중치", ascending=False)
-    st.dataframe(wdf, hide_index=True, use_container_width=True)
+    st.dataframe(wdf, hide_index=True, width="stretch")
 
 st.divider()
 
@@ -174,7 +174,7 @@ fig = go.Figure(
 fig.update_layout(xaxis=dict(range=[0, 108], title="고평가 백분위 (0 = 역사상 최저, 100 = 최고)"))
 webui.base_layout(fig, height=380)
 fig.update_layout(hovermode="closest")
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ---------------------------------------------------------------- summary table
 st.subheader("요약 테이블")
@@ -194,7 +194,7 @@ table = pd.DataFrame(
         for k, s, z, r in rows
     ]
 )
-st.dataframe(table, use_container_width=True, hide_index=True)
+st.dataframe(table, width="stretch", hide_index=True)
 
 # ------------------------------------------------------------ nearest analogs
 st.subheader("🔎 오늘과 가장 닮은 과거")
@@ -226,7 +226,7 @@ if analogs:
             else:
                 row[label] = "-"
         ana_rows.append(row)
-    st.dataframe(pd.DataFrame(ana_rows), hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame(ana_rows), hide_index=True, width="stretch")
 
     # What came next: real total return indexed to 100 at each analog month.
     st.markdown("**닮은 시점 이후 10년, 실제 경로** (실질 총수익, 시작 = 100)")
@@ -247,7 +247,7 @@ if analogs:
                        yaxis_title="실질 총수익 지수 (시작=100)")
     webui.base_layout(afig, height=380)
     afig.update_layout(hovermode="x unified")
-    st.plotly_chart(afig, use_container_width=True)
+    st.plotly_chart(afig, width="stretch")
     st.caption(
         "표본이 몇 개뿐이라 통계적 결론은 불가능합니다 — 경로들이 서로 크게 다르다는 것 "
         "자체가 교훈입니다(비슷한 밸류에이션에서도 미래는 갈라집니다)."

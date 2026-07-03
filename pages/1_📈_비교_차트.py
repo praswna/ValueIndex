@@ -84,7 +84,7 @@ else:
 
 if show_rec:
     webui.add_recession_shading(fig, extras["usrec"], start=start)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 if norm != "원값":
     st.caption(
@@ -124,5 +124,5 @@ heat = go.Figure(
 )
 webui.base_layout(heat, height=520)
 heat.update_layout(hovermode="closest", yaxis=dict(autorange="reversed"))
-st.plotly_chart(heat, use_container_width=True)
+st.plotly_chart(heat, width="stretch")
 st.caption(webui.DISCLAIMER)

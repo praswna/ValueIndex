@@ -72,7 +72,7 @@ wf = go.Figure(
 wf.update_layout(yaxis_title="%/년 (실질)", showlegend=False)
 webui.base_layout(wf, height=380)
 wf.update_layout(hovermode="closest")
-st.plotly_chart(wf, use_container_width=True)
+st.plotly_chart(wf, width="stretch")
 
 rating = stats.rating(webui.aligned_z("cape", stats.summary(panel["cape"].dropna()).z))
 st.caption(
@@ -131,7 +131,7 @@ dfig.add_trace(go.Scatter(x=years_axis, y=contrib_line, mode="lines",
                           hovertemplate="%{x:.0f}년차 원금: %{y:,.0f}만원<extra></extra>"))
 dfig.update_layout(xaxis_title="경과 (년)", yaxis_title="자산 (만원, 실질)")
 webui.base_layout(dfig, height=420)
-st.plotly_chart(dfig, use_container_width=True)
+st.plotly_chart(dfig, width="stretch")
 
 fw = sim.final_wealth
 r1, r2, r3, r4 = st.columns(4)
