@@ -319,6 +319,77 @@ INDICATORS: dict[str, IndicatorMeta] = {
         "역발상 성질입니다. 재지 않는 것: 주식 밸류에이션이나 단기 방향.",
         group="sentiment",
     ),
+    # ---- reference macro numbers (frequently-cited, no valuation rating) ----
+    "fedfunds": IndicatorMeta(
+        key="fedfunds",
+        label_ko="미국 기준금리 (Fed Funds)",
+        label_en="Fed Funds Rate",
+        unit="%",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (미 연준)",
+        what_ko="연준이 정하는 미국의 정책금리 — 사실상 모든 자산 가격의 기준점입니다.",
+        interpret_ko="재는 것: 돈의 값(무위험 이자율). 금리가 오르면 채권·예금이 매력적이 되어 주식엔 "
+        "역풍입니다. 2022~2023년 0%대에서 5%대로의 급등이 밸류에이션을 짓눌렀습니다. "
+        "재지 않는 것: 주식의 싸고 비쌈 자체 — 금리는 배경 조건입니다.",
+        group="reference",
+    ),
+    "cpi_yoy": IndicatorMeta(
+        key="cpi_yoy",
+        label_ko="인플레이션 (CPI 전년비)",
+        label_en="CPI Inflation YoY",
+        unit="%",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (BLS)",
+        what_ko="1년 전 대비 소비자물가 상승률 — 연준이 2%를 목표로 삼는 바로 그 숫자입니다.",
+        interpret_ko="재는 것: 물가 상승 속도. 2%가 연준 목표, 2022년 9%까지 치솟아 금리 급등을 불렀습니다. "
+        "높은 인플레이션은 금리 인상 → 밸류에이션 압박으로 이어집니다. 재지 않는 것: 물가의 절대 수준(누적)이 "
+        "아니라 '속도'입니다.",
+        group="reference",
+    ),
+    "unrate": IndicatorMeta(
+        key="unrate",
+        label_ko="실업률",
+        label_en="Unemployment Rate",
+        unit="%",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (BLS)",
+        what_ko="일할 의사가 있지만 일자리가 없는 사람의 비율 — 경기의 핵심 신호입니다.",
+        interpret_ko="재는 것: 노동시장의 건강. 낮으면(3~4%) 호황, 급등하면 침체 신호입니다. 역설적으로 "
+        "'너무 낮은' 실업률은 과열·금리 인상을 부르기도 합니다(연준의 이중 목표). 재지 않는 것: 주식 방향 — "
+        "실업률이 바닥일 때가 오히려 시장 고점 부근인 경우가 많았습니다.",
+        group="reference",
+    ),
+    "m2_yoy": IndicatorMeta(
+        key="m2_yoy",
+        label_ko="통화량 M2 (전년비 증가율)",
+        label_en="M2 Money Supply YoY",
+        unit="%",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED (미 연준)",
+        what_ko="시중에 도는 돈(현금·예금 등)의 총량이 1년 전보다 얼마나 늘었는지 — '유동성' 논쟁의 그 숫자입니다.",
+        interpret_ko="재는 것: 유동성 팽창/수축 속도. 2020~2021년 급증(+25%)이 자산 가격 급등의 배경으로, "
+        "2022~2023년 사상 첫 감소가 긴축의 상징으로 인용됐습니다. 재지 않는 것: 통화량과 주가의 관계는 "
+        "논쟁적이며 단순 인과가 아닙니다.",
+        group="reference",
+    ),
+    "t10yie": IndicatorMeta(
+        key="t10yie",
+        label_ko="기대 인플레이션 (10년 BEI)",
+        label_en="10Y Breakeven Inflation",
+        unit="%",
+        category="context",
+        higher_is_expensive=False,
+        source="FRED",
+        what_ko="일반 국채와 물가연동채의 금리 차 — 시장이 향후 10년 평균 물가상승률을 얼마로 보는지입니다.",
+        interpret_ko="재는 것: 시장의 인플레이션 예상(설문이 아니라 돈이 건 값). 연준이 신뢰를 잃으면 이 값이 "
+        "치솟습니다. 2%대 근처에 머무는 것이 '기대가 안정적'이라는 신호입니다. 재지 않는 것: 실제 미래 "
+        "물가 — 어디까지나 시장의 예상입니다.",
+        group="reference",
+    ),
 }
 
 VALUATION_KEYS = [k for k, m in INDICATORS.items() if m.category == "valuation"]

@@ -30,6 +30,11 @@ SERIES_COLORS = {
     "aaii_spread": "#4a3aa7",
     "margin_debt": "#e34948",
     "umcsent": "#008300",
+    "fedfunds": "#2a78d6",
+    "cpi_yoy": "#e34948",
+    "unrate": "#eb6834",
+    "m2_yoy": "#008300",
+    "t10yie": "#4a3aa7",
 }
 
 GRID = "#e1e0d9"
@@ -47,6 +52,11 @@ DISCLAIMER = (
     "이 앱은 교육용 정보 도구이며 투자 자문이 아닙니다. "
     "모든 투자 판단과 책임은 본인에게 있습니다."
 )
+
+
+def _yoy(level: pd.Series) -> pd.Series:
+    """Year-over-year percent change of a monthly level series."""
+    return (level / level.shift(12) - 1) * 100
 
 
 @st.cache_data(ttl=3600, show_spinner="데이터를 불러오는 중...")
@@ -72,6 +82,11 @@ def _load(force: bool = False):
             "aaii_spread": indicators.to_monthly(frames["aaii_sentiment"], how="mean"),
             "margin_debt": indicators.to_monthly(frames["finra_margin_debt"]),
             "umcsent": indicators.to_monthly(frames["fred_UMCSENT"]),
+            "fedfunds": indicators.to_monthly(frames["fred_FEDFUNDS"]),
+            "cpi_yoy": _yoy(indicators.to_monthly(frames["fred_CPIAUCSL"])),
+            "unrate": indicators.to_monthly(frames["fred_UNRATE"]),
+            "m2_yoy": _yoy(indicators.to_monthly(frames["fred_M2SL"])),
+            "t10yie": indicators.to_monthly(frames["fred_T10YIE"], how="mean"),
         },
     }
     return panel, statuses, extras

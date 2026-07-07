@@ -26,6 +26,9 @@ GUIDE_LINES = {
     "t10y2y": (0,),          # inversion line
     "aaii_spread": (0,),     # bulls == bears
     "fear_greed": (20, 80),  # extreme fear / extreme greed
+    "cpi_yoy": (2,),         # Fed inflation target
+    "t10yie": (2,),          # anchored inflation expectations
+    "m2_yoy": (0,),          # money supply contraction line
 }
 
 
@@ -56,8 +59,9 @@ def render_indicator(key: str) -> None:
     st.divider()
 
 
-sentiment_keys = [k for k in registry.CONTEXT_KEYS if registry.INDICATORS[k].group == "sentiment"]
-macro_keys = [k for k in registry.CONTEXT_KEYS if registry.INDICATORS[k].group != "sentiment"]
+def keys_in_group(group: str) -> list[str]:
+    return [k for k in registry.CONTEXT_KEYS if registry.INDICATORS[k].group == group]
+
 
 st.header("🧠 심리 온도계 — 시장의 감정을 재는 숫자들")
 st.caption(
@@ -66,11 +70,19 @@ st.caption(
     "의미가 있고, 관례적으로 **역발상**으로 읽습니다. 매매 신호가 아니라 '내 감정이 "
     "시장 전체와 같은 방향인지 확인하는 거울'로 쓰세요."
 )
-for key in sentiment_keys:
+for key in keys_in_group("sentiment"):
+    render_indicator(key)
+
+st.header("📌 자주 참고하는 매크로 숫자")
+st.caption(
+    "뉴스에 매번 나오는 배경 숫자들입니다. 주식이 싸고 비싼지를 직접 말하지는 않지만, "
+    "밸류에이션이 놓인 **판(금리·물가·경기)**을 보여줍니다 — 그래서 등급이 아니라 수치로만 봅니다."
+)
+for key in keys_in_group("reference"):
     render_indicator(key)
 
 st.header("🌍 거시·시장 온도계")
-for key in macro_keys:
+for key in keys_in_group("macro"):
     render_indicator(key)
 
 st.caption(webui.DISCLAIMER)

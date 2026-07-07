@@ -35,6 +35,11 @@ FRED_SERIES = {
     "hy_spread": "BAMLH0A0HYM2",     # ICE BofA US High Yield OAS, daily, pct points
     "wti": "DCOILWTICO",             # WTI crude oil spot, daily, USD/bbl
     "umcsent": "UMCSENT",            # U. Michigan consumer sentiment, monthly
+    "fedfunds": "FEDFUNDS",          # effective federal funds rate, monthly, %
+    "cpi_index": "CPIAUCSL",         # CPI index (for YoY inflation), monthly
+    "unrate": "UNRATE",              # unemployment rate, monthly, %
+    "m2": "M2SL",                    # M2 money stock, monthly, $B (for YoY)
+    "t10yie": "T10YIE",              # 10Y breakeven inflation, daily, %
 }
 
 # --- Sentiment sources (no official APIs; parsers are tolerant and fall
