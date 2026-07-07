@@ -5,8 +5,10 @@ badge so the dashboard can show where its data came from.
 """
 from __future__ import annotations
 
+import json
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Callable
 
@@ -19,6 +21,7 @@ from .fetchers import fred, multpl, sentiment, shiller, stooq
 class DataStatus(str, Enum):
     LIVE = "live"
     CACHED = "cached"
+    SNAPSHOT = "snapshot"        # bundled real-data file, recently auto-refreshed
     STALE_CACHE = "stale_cache"
     SAMPLE = "sample"
 
@@ -55,6 +58,21 @@ def _load_sample(name: str) -> pd.DataFrame | None:
     return df
 
 
+def _snapshot_fresh(name: str) -> bool:
+    """True if the bundled file for this source is real data refreshed
+    recently (by scripts/refresh_sample_data.py or the GitHub Actions
+    workflow), so a network fetch on cold start is unnecessary."""
+    meta_path = config.SAMPLE_DATA_DIR / "_meta.json"
+    if not meta_path.exists():
+        return False
+    try:
+        meta = json.loads(meta_path.read_text())
+        refreshed = datetime.fromisoformat(meta[name])
+    except (json.JSONDecodeError, KeyError, ValueError):
+        return False
+    return datetime.now(timezone.utc) - refreshed < config.SNAPSHOT_TTL
+
+
 def load_source(name: str, force: bool = False) -> tuple[pd.DataFrame, DataStatus]:
     fetch_fn, ttl_key = SOURCES[name]
     ttl = config.CACHE_TTL[ttl_key]
@@ -63,6 +81,12 @@ def load_source(name: str, force: bool = False) -> tuple[pd.DataFrame, DataStatu
         fresh = cache.get(name, ttl)
         if fresh is not None:
             return fresh, DataStatus.CACHED
+        # A recently auto-refreshed bundled snapshot is real data; use it
+        # without touching the network so cold starts render instantly.
+        if _snapshot_fresh(name):
+            snapshot = _load_sample(name)
+            if snapshot is not None and len(snapshot):
+                return snapshot, DataStatus.SNAPSHOT
 
     if not config.OFFLINE:
         try:
@@ -90,7 +114,8 @@ def _sample_or_stale(name: str) -> tuple[pd.DataFrame, DataStatus]:
         return stale, DataStatus.STALE_CACHE
     sample = _load_sample(name)
     if sample is not None:
-        return sample, DataStatus.SAMPLE
+        status = DataStatus.SNAPSHOT if _snapshot_fresh(name) else DataStatus.SAMPLE
+        return sample, status
     return pd.DataFrame(), DataStatus.SAMPLE
 
 

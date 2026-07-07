@@ -44,6 +44,7 @@ RECESSION_FILL = "rgba(137, 135, 129, 0.15)"
 STATUS_LABELS = {
     loader.DataStatus.LIVE: "🟢 실시간",
     loader.DataStatus.CACHED: "🔵 캐시",
+    loader.DataStatus.SNAPSHOT: "🟣 자동 갱신 스냅샷",
     loader.DataStatus.STALE_CACHE: "🟡 오래된 캐시",
     loader.DataStatus.SAMPLE: "⚪ 샘플 데이터",
 }
@@ -128,6 +129,11 @@ def sidebar(statuses: dict[str, str]) -> None:
             st.caption(
                 "⚪ 샘플 데이터는 실제 역사적 기준값 사이를 보간한 근사치입니다. "
                 "인터넷 연결 후 새로고침하면 실제 데이터로 바뀝니다."
+            )
+        if any(s == "snapshot" for s in statuses.values()):
+            st.caption(
+                "🟣 스냅샷은 GitHub Actions가 매일 자동 수집해 둔 실제 데이터입니다. "
+                "즉시 로딩을 위해 사용되며, 새로고침 버튼으로 지금 즉시 갱신할 수 있습니다."
             )
         newest = None
         for name in statuses:

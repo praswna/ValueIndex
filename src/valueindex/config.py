@@ -91,6 +91,9 @@ CACHE_TTL = {
 }
 
 REQUEST_TIMEOUT = 15
+# A bundled snapshot younger than this counts as real data and skips the
+# network on cold start (refreshed daily by the GitHub Actions workflow).
+SNAPSHOT_TTL = timedelta(days=3)
 # Hard wall-clock budget (seconds) for the first cold load of all sources.
 # Sources that don't finish in time fall back to bundled sample data so the
 # app always renders quickly (esp. on Streamlit Cloud). Override via env.

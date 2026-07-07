@@ -24,7 +24,7 @@ dev = ["pytest>=8"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-valueindex = ["sample_data/*.csv", "content/*.md"]
+valueindex = ["sample_data/*.csv", "sample_data/*.json", "content/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -377,6 +377,12 @@ def main() -> None:
         path = OUT / f"{name}.csv"
         df.to_csv(path, index=False)
         print(f"wrote {path.name}: {len(df)} rows")
+    # Interpolated data is NOT a real-data snapshot; drop the freshness meta
+    # so the loader doesn't skip live fetches because of it.
+    meta = OUT / "_meta.json"
+    if meta.exists():
+        meta.unlink()
+        print("removed _meta.json (interpolated data is not a snapshot)")
 
 
 if __name__ == "__main__":

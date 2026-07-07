@@ -78,6 +78,17 @@ pytest -m network      # 라이브 소스 스모크 테스트 (네트워크 필�
 
 오프라인 강제 실행: `VALUEINDEX_OFFLINE=1 streamlit run app.py`
 
+## 데이터 자동 갱신 (GitHub Actions)
+
+`.github/workflows/refresh-data.yml`이 **매일 07:00 KST**에 모든 소스의 실데이터를
+수집해 `src/valueindex/sample_data/`에 커밋합니다(성공한 소스만, 갱신 시각은
+`_meta.json`에 기록). 앱은 **3일 이내의 스냅샷이면 네트워크를 건너뛰고 즉시 로딩**
+하므로, 배포 앱의 콜드 스타트가 수 초 안에 끝납니다. 사이드바에 🟣 "자동 갱신
+스냅샷"으로 표시되며, 새로고침 버튼은 여전히 라이브 수집을 강제합니다.
+
+- 수동 실행: GitHub 저장소 → Actions 탭 → "Refresh market data" → **Run workflow**
+- 첫 실행 전까지는 보간 샘플(⚪)로 동작합니다 — 워크플로를 한 번 수동 실행해 주세요.
+
 ## 번들 샘플 데이터에 관해
 
 `src/valueindex/sample_data/`의 CSV들은 실제 발표된 역사적 기준값(예: 2000년 CAPE
