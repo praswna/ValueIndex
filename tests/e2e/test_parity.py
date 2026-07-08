@@ -170,3 +170,80 @@ class TestQuantParity:
         assert [a["date"] for a in got] == [a["date"] for a in exp]
         for g, e in zip(got, exp):
             assert g["distance"] == pytest.approx(e["distance"], abs=1e-6)
+
+
+class TestBacktestParity:
+    @pytest.fixture(scope="class", autouse=True)
+    def spx_loaded(self, site):
+        page, _ = site
+        page.evaluate(
+            """() => fetch("/docs/data/spx_daily.json")
+                .then(r => r.json()).then(d => { window.SPX = d; return true; })"""
+        )
+
+    @pytest.mark.parametrize(
+        "case", FIXTURES["backtest"],
+        ids=lambda c: f"{c['args']['rule']}@{c['args']['cost_bps']}bp",
+    )
+    def test_rule(self, site, case):
+        page, _ = site
+        got = page.evaluate(
+            """(args) => {
+                const bt = window.VI.backtest;
+                const close = window.SPX.close;
+                const positions = bt.RULES[args.rule].fn(close, window.SPX.dates);
+                const r = bt.evaluate(positions, close, args.cost_bps);
+                return {
+                    n_trades: r.n_trades, n_days_in_market: r.n_days_in_market,
+                    win_rate: r.win_rate, mean_daily_ret: r.mean_daily_ret,
+                    t_stat: r.t_stat, total_costs_pct: r.total_costs_pct,
+                    equity_last: r.equityCurve[r.equityCurve.length - 1],
+                    buyhold_last: r.buyHoldCurve[r.buyHoldCurve.length - 1],
+                };
+            }""",
+            case["args"],
+        )
+        exp = case["expected"]
+        assert got["n_trades"] == exp["n_trades"]
+        assert got["n_days_in_market"] == exp["n_days_in_market"]
+        for f in ("win_rate", "mean_daily_ret", "t_stat", "total_costs_pct",
+                  "equity_last", "buyhold_last"):
+            assert got[f] == pytest.approx(exp[f], rel=1e-8, abs=1e-10), f
+
+
+class TestMcParity:
+    def test_statistical_percentiles(self, site):
+        """Different RNGs -> statistical agreement of the distribution."""
+        page, _ = site
+        case = FIXTURES["mc"][0]
+        got = page.evaluate(
+            """(args) => {
+                const s = window.VI.stats;
+                const mc = window.VI.mc;
+                const {values} = s.cleanPairs(window.PANEL.dates, window.PANEL.series.real_tri);
+                const rets = s.pctChange(values).slice(1);
+                const res = mc.simulateDca(rets, args.contrib, args.years,
+                                           {nSims: args.n_sims});
+                const sorted = res.finalWealth.slice().sort((a, b) => a - b);
+                return {
+                    total_contributed: res.totalContributed,
+                    final_p5: mc.percentileLinear(sorted, 5),
+                    final_p50: mc.percentileLinear(sorted, 50),
+                    final_p95: mc.percentileLinear(sorted, 95),
+                };
+            }""",
+            case["args"],
+        )
+        exp = case["expected"]
+        assert got["total_contributed"] == exp["total_contributed"]
+        assert got["final_p50"] == pytest.approx(exp["final_p50"], rel=0.06)
+        assert got["final_p5"] == pytest.approx(exp["final_p5"], rel=0.12)
+        assert got["final_p95"] == pytest.approx(exp["final_p95"], rel=0.12)
+
+    def test_bogle_formula_exact(self, site):
+        page, _ = site
+        got = page.evaluate(
+            "() => window.VI.mc.bogleExpectedReturn(2.0, 3.0, 40.0, 20.0)")
+        from valueindex.indicators import bogle_expected_return
+        assert got == pytest.approx(bogle_expected_return(2.0, 3.0, 40.0, 20.0),
+                                    abs=1e-12)

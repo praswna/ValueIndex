@@ -16,7 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from valueindex import quant, registry, stats  # noqa: E402
+from valueindex import backtest, quant, registry, stats  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "data"
@@ -133,11 +133,62 @@ def quant_cases(panel: dict) -> list[dict]:
     return cases
 
 
+def backtest_cases(spx: dict) -> list[dict]:
+    ohlc = pd.DataFrame(
+        {"close": spx["close"]}, index=pd.to_datetime(spx["dates"])
+    ).astype(float)
+    cases = []
+    for rule_key, (label, fn) in backtest.RULES.items():
+        positions = fn(ohlc)
+        for cost in (0, 10):
+            res = backtest.evaluate(positions, ohlc["close"], cost_bps=cost)
+            cases.append(
+                {
+                    "fn": "backtest",
+                    "args": {"rule": rule_key, "cost_bps": cost},
+                    "expected": {
+                        "n_trades": res.n_trades,
+                        "n_days_in_market": res.n_days_in_market,
+                        "win_rate": float(res.win_rate),
+                        "mean_daily_ret": float(res.mean_daily_ret),
+                        "t_stat": float(res.t_stat),
+                        "total_costs_pct": float(res.total_costs_pct),
+                        "equity_last": float(res.equity_curve.iloc[-1]),
+                        "buyhold_last": float(res.buy_hold_curve.iloc[-1]),
+                    },
+                }
+            )
+    return cases
+
+
+def mc_cases(panel: dict) -> list[dict]:
+    tri = series_from_panel(panel, "real_tri")
+    rets = tri.pct_change().dropna()
+    res = quant.simulate_dca(rets, 100.0, 20, n_sims=4000)
+    import numpy as np
+
+    return [
+        {
+            "fn": "simulate_dca",
+            "args": {"contrib": 100.0, "years": 20, "n_sims": 4000},
+            "expected": {
+                "total_contributed": float(res.total_contributed),
+                "final_p5": float(np.percentile(res.final_wealth, 5)),
+                "final_p50": float(np.percentile(res.final_wealth, 50)),
+                "final_p95": float(np.percentile(res.final_wealth, 95)),
+            },
+        }
+    ]
+
+
 def main() -> None:
     panel = json.loads((DATA / "panel.json").read_text(encoding="utf-8"))
+    spx = json.loads((DATA / "spx_daily.json").read_text(encoding="utf-8"))
     fixtures = {
         "stats": stats_cases(panel) + [drawdown_case(panel)],
         "quant": quant_cases(panel),
+        "backtest": backtest_cases(spx),
+        "mc": mc_cases(panel),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(fixtures, indent=1), encoding="utf-8")

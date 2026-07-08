@@ -508,5 +508,193 @@
     }
    ]
   }
+ ],
+ "backtest": [
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "rsi",
+    "cost_bps": 0
+   },
+   "expected": {
+    "n_trades": 194,
+    "n_days_in_market": 1933,
+    "win_rate": 0.5447490946714951,
+    "mean_daily_ret": 0.06588068966697855,
+    "t_stat": 3.6373557803547687,
+    "total_costs_pct": 0.0,
+    "equity_last": 3.3596945865400403,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "rsi",
+    "cost_bps": 10
+   },
+   "expected": {
+    "n_trades": 194,
+    "n_days_in_market": 1933,
+    "win_rate": 0.5447490946714951,
+    "mean_daily_ret": 0.06588068966697855,
+    "t_stat": 3.6373557803547687,
+    "total_costs_pct": 38.800000000000004,
+    "equity_last": 2.2791663014288446,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "golden_cross",
+    "cost_bps": 0
+   },
+   "expected": {
+    "n_trades": 21,
+    "n_days_in_market": 8914,
+    "win_rate": 0.5278214045321965,
+    "mean_daily_ret": 0.05681206791360594,
+    "t_stat": 6.670406632911777,
+    "total_costs_pct": 0.0,
+    "equity_last": 118.5059069313609,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "golden_cross",
+    "cost_bps": 10
+   },
+   "expected": {
+    "n_trades": 21,
+    "n_days_in_market": 8914,
+    "win_rate": 0.5278214045321965,
+    "mean_daily_ret": 0.05681206791360594,
+    "t_stat": 6.670406632911777,
+    "total_costs_pct": 4.1000000000000005,
+    "equity_last": 113.73781024789983,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "down_streak",
+    "cost_bps": 0
+   },
+   "expected": {
+    "n_trades": 593,
+    "n_days_in_market": 4045,
+    "win_rate": 0.5248454882571075,
+    "mean_daily_ret": 0.038544497814524056,
+    "t_stat": 3.017777855684015,
+    "total_costs_pct": 0.0,
+    "equity_last": 4.159865308769384,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "down_streak",
+    "cost_bps": 10
+   },
+   "expected": {
+    "n_trades": 593,
+    "n_days_in_market": 4045,
+    "win_rate": 0.5248454882571075,
+    "mean_daily_ret": 0.038544497814524056,
+    "t_stat": 3.017777855684015,
+    "total_costs_pct": 118.60000000000002,
+    "equity_last": 1.2700288200233074,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "dip_buy",
+    "cost_bps": 0
+   },
+   "expected": {
+    "n_trades": 17,
+    "n_days_in_market": 2614,
+    "win_rate": 0.48967100229533284,
+    "mean_daily_ret": -0.02042300430633949,
+    "t_stat": -1.2814065176663216,
+    "total_costs_pct": 0.0,
+    "equity_last": 0.5375712385232575,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "dip_buy",
+    "cost_bps": 10
+   },
+   "expected": {
+    "n_trades": 17,
+    "n_days_in_market": 2614,
+    "win_rate": 0.48967100229533284,
+    "mean_daily_ret": -0.02042300430633949,
+    "t_stat": -1.2814065176663216,
+    "total_costs_pct": 3.4000000000000004,
+    "equity_last": 0.5195763824849525,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "monday",
+    "cost_bps": 0
+   },
+   "expected": {
+    "n_trades": 2426,
+    "n_days_in_market": 2426,
+    "win_rate": 0.4971145919208574,
+    "mean_daily_ret": 0.013136851253893746,
+    "t_stat": 0.8033985669554231,
+    "total_costs_pct": 0.0,
+    "equity_last": 1.2713463280586708,
+    "buyhold_last": 89.30655957162024
+   }
+  },
+  {
+   "fn": "backtest",
+   "args": {
+    "rule": "monday",
+    "cost_bps": 10
+   },
+   "expected": {
+    "n_trades": 2426,
+    "n_days_in_market": 2426,
+    "win_rate": 0.4971145919208574,
+    "mean_daily_ret": 0.013136851253893746,
+    "t_stat": 0.8033985669554231,
+    "total_costs_pct": 485.20000000000005,
+    "equity_last": 0.009910211347241306,
+    "buyhold_last": 89.30655957162024
+   }
+  }
+ ],
+ "mc": [
+  {
+   "fn": "simulate_dca",
+   "args": {
+    "contrib": 100.0,
+    "years": 20,
+    "n_sims": 4000
+   },
+   "expected": {
+    "total_contributed": 24000.0,
+    "final_p5": 22032.294169582754,
+    "final_p50": 52635.519738373216,
+    "final_p95": 131038.33328011114
+   }
+  }
  ]
 }

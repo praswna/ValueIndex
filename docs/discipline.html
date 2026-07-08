@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 투자 규율</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>🧘 투자 규율</h1>
+  <div id="content"></div>
+
+  <hr>
+  <h2>역사적 드로다운 — 급락은 정상입니다</h2>
+  <div id="dd-chart" class="chart"></div>
+  <div id="dd-facts"></div>
+
+  <hr>
+  <h2>시나리오별 행동 규칙 (사전 약속)</h2>
+  <p id="scenario-lead"></p>
+  <div class="grid-3">
+    <div class="card"><h3 style="margin-top:0">🔴 매우 고평가일 때</h3><ul>
+      <li>신규 목돈은 분할 폭을 <b>넓게</b> (예: 12개월)</li>
+      <li>향후 10년 기대치를 낮춰 잡기 (<a href="start.html">🧭 계산기</a>)</li>
+      <li>채권/현금 비중 재점검</li>
+      <li>❌ <b>보유분 전량 매도가 아닙니다</b></li></ul></div>
+    <div class="card"><h3 style="margin-top:0">🔵 저평가일 때</h3><ul>
+      <li>미리 정한 리밸런싱 실행 (주식 비중 복원)</li>
+      <li>적립 금액 유지 또는 계획된 범위 내 증액</li>
+      <li>❌ <b>빚내서 몰빵이 아닙니다</b></li></ul></div>
+    <div class="card"><h3 style="margin-top:0">📉 시장 −30% 급락 시</h3><ul>
+      <li>적립 <b>중단 금지</b> — 같은 돈으로 더 많이 삽니다</li>
+      <li>뉴스·계좌 확인 빈도 줄이기</li>
+      <li>위 드로다운 차트 다시 보기: 매번 회복했습니다</li>
+      <li>❌ <b>'일단 팔고 지켜보기'가 최악의 수입니다</b></li></ul></div>
+  </div>
+
+  <hr>
+  <h2>매수 전 체크리스트</h2>
+  <p class="caption">하나라도 체크가 안 되면, 오늘은 사지 않는 것이 규칙입니다.
+    (체크 상태는 저장되지 않습니다)</p>
+  <div id="checklist"></div>
+  <div class="box" id="check-result"></div>
+
+  <hr>
+  <h2>월간 점검 루틴 — 한 달에 한 번, 이 3가지만</h2>
+  <ol>
+    <li><a href="index.html">개요 페이지</a>에서 등급 색이 바뀌었는지 확인
+      (대부분 그대로입니다)</li>
+    <li>내 포트폴리오의 주식/채권 비중이 목표에서 ±5%p 이상 벗어났는지 확인</li>
+    <li><b>아무것도 안 해도 된다는 것</b>을 확인하고 닫기 — 행동하지 않는 것도
+      결정입니다</li>
+  </ol>
+
+  <hr>
+  <h2>더 공부하기</h2>
+  <div id="resources"></div>
+</main>
+<script type="module" src="assets/js/pages/discipline.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 투자 시작 가이드</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>🧭 투자 시작 가이드</h1>
+  <div class="box box-warn">아래 내용은 교육용 일반 원칙이며 개인 상황(소득·부채·세금)에 따른
+    투자 자문이 아닙니다. 큰 금액이라면 자격 있는 전문가와 상의하세요.</div>
+  <div id="content"></div>
+
+  <hr>
+  <h2>🧮 10년 기대수익률 계산기 (Bogle 공식)</h2>
+  <p>존 보글이 대중화한 분해식입니다 — Vanguard·GMO 같은 운용사의 장기 전망도 본질적으로
+  이 원리를 씁니다: <b>기대수익률 ≈ 배당수익률 + 이익성장률 + 밸류에이션 변화(연환산)</b>.
+  배당수익률과 현재 CAPE는 최신 데이터로 채워져 있습니다. 나머지 두 가정을 직접 움직여
+  보세요 — <b>가정이 결론을 만든다</b>는 것을 보는 게 이 계산기의 목적입니다.</p>
+  <div class="controls">
+    <label class="control">실질 이익성장률 가정 (%/년): <b id="growth-label"></b>
+      <input type="range" id="growth" min="-2" max="6" step="0.25" value="2"></label>
+    <label class="control">10년 뒤 CAPE 가정: <b id="capef-label"></b>
+      <input type="range" id="capef" min="10" max="60" step="0.5"></label>
+  </div>
+  <div class="grid-2" style="grid-template-columns: 1fr 3fr; align-items: start;">
+    <div class="card">
+      <div class="metric-label">10년 실질 기대수익률 (연환산)</div>
+      <div class="metric-value" id="bogle-total">…</div>
+      <div class="metric-note">인플레이션을 뺀 실질 기준입니다.</div>
+    </div>
+    <div id="waterfall" class="chart"></div>
+  </div>
+  <p class="caption" id="bogle-note"></p>
+
+  <hr>
+  <h2>🎲 적립식 투자 시뮬레이션 (몬테카를로)</h2>
+  <p>위 계산기의 기대수익률은 <b>평균</b>일 뿐입니다. 실제 결과는 그 주변에 넓게 흩어집니다 —
+  얼마나 흩어지는지를 보여주는 것이 이 시뮬레이션입니다. 지난 150여 년의 <b>월간 실질
+  수익률을 12개월 블록 단위로 무작위 재표집</b>(블록 부트스트랩)해서, 변동성의 군집성까지
+  보존한 2,000개의 가상 미래를 만듭니다.</p>
+  <div class="controls">
+    <label class="control">월 적립액 (만원)
+      <input type="number" id="contrib" min="10" max="1000" step="10" value="50"></label>
+    <label class="control">적립 기간: <b id="years-label"></b>년
+      <input type="range" id="years" min="5" max="40" step="1" value="20"></label>
+    <div class="control">수익률 가정
+      <span class="check-row" id="drift-btns"></span>
+    </div>
+  </div>
+  <div id="mc-chart" class="chart"></div>
+  <div class="grid-4" id="mc-metrics"></div>
+  <p class="caption" id="mc-note"></p>
+
+  <hr>
+  <h2>📐 자주 인용되는 규칙들 (치트시트)</h2>
+  <div class="grid-2">
+    <div class="card"><b>72의 법칙</b> — 72 ÷ 연수익률 ≈ 원금이 2배 되는 햇수.
+      <div class="controls" style="margin:8px 0 0">
+        <label class="control">연수익률 (%)
+          <input type="number" id="r72" min="1" max="30" step="0.5" value="7"></label>
+      </div>
+      <div class="metric-note" id="r72-out"></div></div>
+    <div class="card"><b>4% 룰</b> — 은퇴 자산에서 매년 4%씩 인출하면 30년간 고갈되지 않을
+      확률이 역사적으로 높았다는 어림 규칙. 뒤집으면: <b>필요 은퇴자산 ≈ 연 지출 × 25</b>.
+      저금리·고밸류에이션 시대에는 3~3.5%로 낮춰 잡자는 견해도 많습니다.</div>
+    <div class="card"><b>100 − 나이</b> — 주식 비중의 고전적 어림값 (30세면 주식 70%).
+      기대수명이 늘며 <b>110 − 나이</b>를 쓰는 경우도 많습니다. 출발점일 뿐, 본인의
+      감내 가능한 하락폭이 우선입니다.</div>
+    <div class="card"><b>주식 위험프리미엄 ≈ 4~5%p</b> — 주식이 국채보다 장기적으로 더
+      줬던 초과수익의 역사적 평균. 밸류에이션이 높을수록 앞으로의 프리미엄은 이보다
+      낮게 잡는 것이 보수적입니다.</div>
+  </div>
+</main>
+<script type="module" src="assets/js/pages/start.js"></script>
+</body>
+</html>
