@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 시장 온도계</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>🌡️ 시장 온도계</h1>
+  <div class="box box-info"><b>왜 이 지표들은 고평가/저평가 등급이 없나요?</b><br>
+    금·유가는 이익도 배당도 만들지 않아 '적정 가격'의 기준점이 없고, VIX·금리차·신용스프레드는
+    밸류에이션이 아니라 <b>심리·경기의 신호</b>입니다. 등급을 매기면 오히려 잘못된 해석을
+    유도하므로, 여기서는 수치와 맥락만 보여줍니다.</div>
+  <div id="sections"></div>
+</main>
+<script type="module" src="assets/js/pages/thermometer.js"></script>
+</body>
+</html>
