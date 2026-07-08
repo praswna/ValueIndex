@@ -18,13 +18,16 @@ class TestYahooChart:
         # unix seconds -> naive UTC date
         assert df["date"].iloc[0] == pd.Timestamp("2025-06-28")
 
-    def test_drops_null_close(self):
+    def test_drops_partial_candle(self):
+        # last row is a partial "today" candle: 0/null OHLC -> dropped
         raw = (
             '{"chart":{"result":[{"timestamp":[1751068800,1751155200],'
-            '"indicators":{"quote":[{"close":[100.0,null]}]}}],"error":null}}'
+            '"indicators":{"quote":[{"open":[100.0,0.0],"high":[101.0,0.0],'
+            '"low":[99.0,0.0],"close":[100.5,7246.79]}]}}],"error":null}}'
         )
         df = _parse_chart_json(raw)
         assert len(df) == 1
+        assert df["close"].iloc[0] == pytest.approx(100.5)
 
     def test_error_and_empty_raise(self):
         with pytest.raises(ValueError):

@@ -15,9 +15,12 @@ import pandas as pd
 from .. import config
 from . import http
 
+# Bounded range forces true daily candles — range=max makes Yahoo
+# downsample to monthly/quarterly. 10y of daily is plenty for the lab and
+# the charts (long history comes from Shiller, not here).
 CHART_URL = (
     "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-    "?range=max&interval=1d"
+    "?range=10y&interval=1d"
 )
 
 
@@ -45,7 +48,11 @@ def _parse_chart_json(text: str) -> pd.DataFrame:
     )
     for col in ("open", "high", "low", "close"):
         df[col] = pd.to_numeric(df[col], errors="coerce")
-    return df.dropna(subset=["close"]).sort_values("date").reset_index(drop=True)
+    # Drop incomplete candles (Yahoo's live/partial "today" row has null or
+    # 0 OHLC) and any null close.
+    df = df.dropna(subset=["open", "high", "low", "close"])
+    df = df[df["high"] > 0]
+    return df.sort_values("date").reset_index(drop=True)
 
 
 def fetch_chart(symbol: str) -> pd.DataFrame:
