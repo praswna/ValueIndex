@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from . import cache, config, indicators, loader, registry, stats
+from . import cache, config, indicators, loader, registry, sitebuild, stats
 
 # Fixed color per indicator key (validated categorical palette; identity
 # follows the entity, never the selection order).
@@ -55,41 +55,13 @@ DISCLAIMER = (
 )
 
 
-def _yoy(level: pd.Series) -> pd.Series:
-    """Year-over-year percent change of a monthly level series."""
-    return (level / level.shift(12) - 1) * 100
-
-
 @st.cache_data(ttl=3600, show_spinner="데이터를 불러오는 중...")
 def _load(force: bool = False):
     data = loader.load_all(force=force)
     frames = {k: v[0] for k, v in data.items()}
     statuses = {k: v[1].value for k, v in data.items()}
     panel = indicators.build_panel(frames)
-
-    sh = frames["shiller"].set_index("date").sort_index()
-    tri = indicators.real_total_return_index(sh["real_price"], sh["dividend"] / sh["cpi"] * sh["cpi"].iloc[-1])
-    extras = {
-        "usrec": frames["fred_USREC"].set_index("date")["value"],
-        "real_tri": tri,
-        "spx_daily": frames["stooq_spx_daily"],
-        "context": {
-            "vix": indicators.to_monthly(frames["fred_VIXCLS"], how="mean"),
-            "t10y2y": indicators.to_monthly(frames["fred_T10Y2Y"], how="mean"),
-            "hy_spread": indicators.to_monthly(frames["fred_BAMLH0A0HYM2"], how="mean"),
-            "gold": frames["stooq_gold"].set_index("date")["close"].resample("MS").mean(),
-            "wti": indicators.to_monthly(frames["fred_DCOILWTICO"], how="mean"),
-            "fear_greed": indicators.to_monthly(frames["cnn_fear_greed"], how="mean"),
-            "aaii_spread": indicators.to_monthly(frames["aaii_sentiment"], how="mean"),
-            "margin_debt": indicators.to_monthly(frames["finra_margin_debt"]),
-            "umcsent": indicators.to_monthly(frames["fred_UMCSENT"]),
-            "fedfunds": indicators.to_monthly(frames["fred_FEDFUNDS"]),
-            "cpi_yoy": _yoy(indicators.to_monthly(frames["fred_CPIAUCSL"])),
-            "unrate": indicators.to_monthly(frames["fred_UNRATE"]),
-            "m2_yoy": _yoy(indicators.to_monthly(frames["fred_M2SL"])),
-            "t10yie": indicators.to_monthly(frames["fred_T10YIE"], how="mean"),
-        },
-    }
+    extras = sitebuild.build_extras(frames)
     return panel, statuses, extras
 
 

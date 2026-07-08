@@ -395,6 +395,16 @@ INDICATORS: dict[str, IndicatorMeta] = {
 VALUATION_KEYS = [k for k, m in INDICATORS.items() if m.category == "valuation"]
 CONTEXT_KEYS = [k for k, m in INDICATORS.items() if m.category == "context"]
 
+# Reference lines drawn on context charts (thermometer page and static site).
+GUIDE_LINES: dict[str, tuple[float, ...]] = {
+    "t10y2y": (0,),          # inversion line
+    "aaii_spread": (0,),     # bulls == bears
+    "fear_greed": (20, 80),  # extreme fear / extreme greed
+    "cpi_yoy": (2,),         # Fed inflation target
+    "t10yie": (2,),          # anchored inflation expectations
+    "m2_yoy": (0,),          # money supply contraction line
+}
+
 # Famous historical episodes for the time machine presets.
 TIME_MACHINE_PRESETS = {
     "1929년 9월 (대공황 직전)": "1929-09-01",

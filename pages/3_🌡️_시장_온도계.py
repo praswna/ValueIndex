@@ -22,15 +22,6 @@ st.info(
     "등급을 매기면 오히려 잘못된 해석을 유도하므로, 여기서는 수치와 맥락만 보여줍니다."
 )
 
-GUIDE_LINES = {
-    "t10y2y": (0,),          # inversion line
-    "aaii_spread": (0,),     # bulls == bears
-    "fear_greed": (20, 80),  # extreme fear / extreme greed
-    "cpi_yoy": (2,),         # Fed inflation target
-    "t10yie": (2,),          # anchored inflation expectations
-    "m2_yoy": (0,),          # money supply contraction line
-}
-
 
 def render_indicator(key: str) -> None:
     meta = registry.INDICATORS[key]
@@ -49,7 +40,7 @@ def render_indicator(key: str) -> None:
         st.caption(f"{s.index[0].year}년~ · {meta.source}")
     with col_chart:
         fig = go.Figure(webui.line_trace(s, key, name=meta.label_ko))
-        for level in GUIDE_LINES.get(key, ()):
+        for level in registry.GUIDE_LINES.get(key, ()):
             fig.add_hline(y=level, line_color="#c22f2f", line_width=1, line_dash="dot")
         fig.update_layout(showlegend=False, yaxis_title=meta.unit)
         webui.base_layout(fig, height=260)
