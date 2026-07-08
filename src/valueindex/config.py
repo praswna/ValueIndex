@@ -79,6 +79,27 @@ STOOQ_CSV_URL = "https://stooq.com/q/d/l/?s={symbol}&i=d"
 STOOQ_SYMBOLS = {
     "spx_daily": "^spx",     # S&P 500 daily OHLC
     "gold": "xauusd",        # gold spot, USD/oz
+    "kospi_daily": "^kospi",  # KOSPI index daily OHLC
+}
+
+# --- Korea market -------------------------------------------------------------
+# KRX 정보데이터시스템 (data.krx.co.kr) — keyless but needs a POST with a
+# referer header; the endpoint id changes rarely. Tolerant parser + sample
+# fallback (verified live only by the Actions run, not this sandbox).
+KRX_OTP_URL = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd"
+KRX_DATA_URL = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+KRX_PER_PBR_BLD = "dbms/MDC/STAT/standard/MDCSTAT03501"  # 지수 PER/PBR/배당수익률
+KRX_REFERER = "http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd"
+
+# World Bank nominal GDP (current US$), keyless JSON, annual.
+WORLDBANK_GDP_URL = (
+    "https://api.worldbank.org/v2/country/KR/indicator/NY.GDP.MKTP.CD"
+    "?format=json&per_page=200"
+)
+
+FRED_KR_SERIES = {
+    "krw": "DEXKOUS",              # KRW/USD exchange rate, daily
+    "kr_10y": "IRLTLT01KRM156N",   # Korea 10Y govt bond yield, monthly (OECD)
 }
 
 # --- Cache TTLs ------------------------------------------------------------------
@@ -91,6 +112,8 @@ CACHE_TTL = {
     "finra": timedelta(days=7),
     "cnn": timedelta(days=1),
     "aaii": timedelta(days=7),
+    "krx": timedelta(days=1),
+    "worldbank": timedelta(days=30),
 }
 
 REQUEST_TIMEOUT = 15

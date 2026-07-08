@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 한국 시장</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>🇰🇷 한국 시장 (KOSPI)</h1>
+  <div class="box box-info"><b>왜 미국과 지표 구성이 다른가요?</b><br>
+    한국은 10년치 실질이익의 장기 데이터가 없어 <b>CAPE를 계산할 수 없습니다.</b>
+    대신 KRX가 공개하는 지수 <b>PER·PBR·배당수익률</b>(2004년~)로 밸류에이션을 봅니다.
+    히스토리가 20여 년으로 짧아 등급의 신뢰도는 미국(150년)보다 낮습니다 (⚠️ 표시).</div>
+  <div id="unavailable"></div>
+
+  <h2>KOSPI 지수</h2>
+  <div id="kospi-chart" class="chart"></div>
+
+  <h2>KOSPI 밸류에이션</h2>
+  <div class="grid-3" id="val-cards"></div>
+  <div id="val-charts"></div>
+
+  <h2>미국과 나란히 보기</h2>
+  <p class="caption">두 시장의 후행 PER을 각자의 역사 백분위로 비교합니다 — 절대 배수보다
+    '각 시장 기준으로 지금 비싼가'가 비교의 핵심입니다.</p>
+  <div id="compare-chart" class="chart"></div>
+
+  <h2>환율·금리</h2>
+  <div class="grid-2" id="macro-charts"></div>
+</main>
+<script type="module" src="assets/js/pages/korea.js"></script>
+</body>
+</html>

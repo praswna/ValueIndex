@@ -1,0 +1,9 @@
+[
+  {"page": 1, "pages": 1, "per_page": 200, "total": 4},
+  [
+    {"indicator": {"id": "NY.GDP.MKTP.CD"}, "country": {"id": "KR"}, "date": "2024", "value": 1870000000000},
+    {"indicator": {"id": "NY.GDP.MKTP.CD"}, "country": {"id": "KR"}, "date": "2023", "value": 1712790000000},
+    {"indicator": {"id": "NY.GDP.MKTP.CD"}, "country": {"id": "KR"}, "date": "2022", "value": null},
+    {"indicator": {"id": "NY.GDP.MKTP.CD"}, "country": {"id": "KR"}, "date": "1960", "value": 3958000000}
+  ]
+]

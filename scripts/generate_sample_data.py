@@ -368,6 +368,50 @@ def gen_stooq(sh: pd.DataFrame) -> dict[str, pd.DataFrame]:
     return {"stooq_spx_daily": spx, "stooq_gold": gold}
 
 
+# ------------------------------------------------------------------- korea ----
+def gen_korea() -> dict[str, pd.DataFrame]:
+    out = {}
+    # KOSPI daily index
+    days = pd.bdate_range("1996-01-02", "2026-06-30")
+    kospi = interp(days, {
+        1996.0: 880, 1998.8: 300, 2000.0: 1030, 2001.7: 490, 2007.9: 2060,
+        2008.9: 940, 2011.4: 2210, 2016.0: 1830, 2018.1: 2600, 2020.2: 1460,
+        2021.5: 3300, 2022.9: 2160, 2024.5: 2700, 2026.5: 3100,
+    }, log=True, noise=0.01)
+    out["stooq_kospi_daily"] = pd.DataFrame({
+        "date": days, "open": kospi.values.round(1), "high": (kospi * 1.005).values.round(1),
+        "low": (kospi * 0.995).values.round(1), "close": kospi.values.round(1),
+    })
+    # KRX valuation (PER/PBR/div), daily 2004+
+    kdays = pd.bdate_range("2004-01-02", "2026-06-30")
+    per = interp(kdays, {2004.0: 10, 2007.9: 16, 2008.9: 8, 2011.0: 13, 2015.0: 11,
+                         2018.0: 10, 2020.2: 12, 2021.5: 18, 2022.9: 10, 2026.5: 13},
+                 noise=0.01).clip(5, 30)
+    pbr = interp(kdays, {2004.0: 1.1, 2007.9: 1.9, 2008.9: 0.8, 2011.0: 1.4, 2015.0: 1.0,
+                         2018.0: 1.0, 2021.5: 1.2, 2022.9: 0.85, 2026.5: 1.0},
+                 noise=0.008).clip(0.6, 2.2)
+    dvd = (100 / per / pbr * 1.3).clip(0.8, 4)
+    out["krx_valuation"] = pd.DataFrame({
+        "date": kdays, "per": per.values.round(2), "pbr": pbr.values.round(2),
+        "div_yield": dvd.values.round(2),
+    })
+    # World Bank GDP (annual, USD)
+    gyears = pd.date_range("1960-12-31", "2024-12-31", freq="YE")
+    gdp = interp(gyears, {1960.9: 4e9, 1980.9: 6.5e10, 2000.9: 5.8e11,
+                          2010.9: 1.14e12, 2020.9: 1.64e12, 2024.9: 1.87e12}, log=True)
+    out["worldbank_gdp"] = pd.DataFrame({"date": gyears, "value": gdp.values.round(0)})
+    # FRED Korea series
+    krw_idx = pd.date_range("1981-04-01", "2026-06-01", freq="MS")
+    out["fred_DEXKOUS"] = fred_frame(krw_idx, interp(krw_idx, {
+        1981.3: 685, 1997.9: 1700, 2001.0: 1300, 2008.9: 1500, 2014.0: 1050,
+        2020.2: 1280, 2022.9: 1440, 2026.5: 1350}, noise=0.01))
+    y10_idx = pd.date_range("2000-10-01", "2026-06-01", freq="MS")
+    out["fred_IRLTLT01KRM156N"] = fred_frame(y10_idx, interp(y10_idx, {
+        2000.8: 7.0, 2005.0: 4.5, 2008.9: 5.5, 2016.5: 1.4, 2020.5: 1.4,
+        2022.9: 4.2, 2026.5: 3.3}, noise=0.01))
+    return out
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     sh = gen_shiller()
@@ -376,6 +420,7 @@ def main() -> None:
     frames.update(gen_sentiment())
     frames.update(gen_multpl(sh))
     frames.update(gen_stooq(sh))
+    frames.update(gen_korea())
     for name, df in frames.items():
         path = OUT / f"{name}.csv"
         df.to_csv(path, index=False)

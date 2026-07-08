@@ -28,10 +28,22 @@ class TestBuildSite:
         out, _ = built
         expected = {
             "meta.json", "registry.json", "panel.json", "context.json",
-            "overview.json", "guide.json", "spx_daily.json", "content.json",
-            "valueindex_panel.csv",
+            "overview.json", "guide.json", "spx_daily.json", "korea.json",
+            "content.json", "valueindex_panel.csv",
         }
         assert expected <= {p.name for p in out.iterdir()}
+
+    def test_korea_payload(self, built):
+        out, _ = built
+        k = load(out, "korea.json")
+        assert len(k["kospi"]["dates"]) == len(k["kospi"]["values"]) > 100
+        rating_keys = {r.key for _, r in
+                       __import__("valueindex.stats", fromlist=["RATINGS"]).RATINGS}
+        for key, v in k["indicators"].items():
+            assert v["rating"] in rating_keys
+            assert len(v["dates"]) == len(v["values"])
+            assert v["start_year"] >= 2004
+        assert "krw" in k
 
     def test_panel_grid_consistent(self, built):
         out, _ = built

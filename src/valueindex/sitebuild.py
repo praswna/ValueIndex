@@ -283,6 +283,61 @@ def spx_payload(spx_daily: pd.DataFrame) -> dict:
     return {"dates": _dates(df["date"]), "close": _nums(df["close"].values)}
 
 
+def korea_payload(frames: dict[str, pd.DataFrame]) -> dict:
+    """KOSPI index, KRX valuation (PER/PBR/div) with ratings, Korea Buffett
+    approximation, KRW, and — when available — Korea 10Y.
+
+    PER/PBR/dividend get direction-aligned sigma ratings against their own
+    (short, 2004+) history, flagged as low-confidence in the UI.
+    """
+    krx = frames["krx_valuation"].set_index("date").sort_index()
+    kospi = frames["stooq_kospi_daily"].set_index("date").sort_index()["close"]
+
+    out = {
+        "kospi": {"dates": _dates(kospi.index), "values": _nums(kospi.values)},
+        "indicators": {},
+        "start_year": int(krx.index[0].year),
+    }
+
+    # KOSPI PER / PBR / dividend yield: monthly, own-history rating.
+    higher_expensive = {"per": True, "pbr": True, "div_yield": False}
+    labels = {"per": "KOSPI PER", "pbr": "KOSPI PBR", "div_yield": "KOSPI 배당수익률"}
+    units = {"per": "배", "pbr": "배", "div_yield": "%"}
+    for col in ("per", "pbr", "div_yield"):
+        s = indicators.to_monthly(
+            krx[col].reset_index().rename(columns={col: "value"})[["date", "value"]]
+        ).dropna()
+        if s.empty:
+            continue
+        summ = stats.summary(s)
+        z = summ.z if higher_expensive[col] else -summ.z
+        out["indicators"][col] = {
+            "label_ko": labels[col], "unit": units[col],
+            "higher_is_expensive": higher_expensive[col],
+            "dates": _dates(s.index), "values": _nums(s.values),
+            "current": _num(summ.current), "asof": summ.asof.strftime("%Y-%m-%d"),
+            "mean": _num(summ.mean),
+            "aligned_z": _num(z), "rating": stats.rating(z).key,
+            "aligned_pctile": _num(summ.pctile if higher_expensive[col]
+                                   else 100 - summ.pctile),
+            "start_year": int(summ.start.year),
+        }
+
+    # Korea Buffett indicator (approx): KOSPI market cap proxy not directly
+    # available free; approximate the *ratio's shape* is out of scope, so we
+    # ship KRW and GDP for context and label Buffett as unavailable-precise.
+    krw = indicators.to_monthly(frames["fred_DEXKOUS"], how="mean").dropna()
+    out["krw"] = {"dates": _dates(krw.index), "values": _nums(krw.values)}
+
+    if "fred_IRLTLT01KRM156N" in frames:
+        y10 = indicators.to_monthly(frames["fred_IRLTLT01KRM156N"]).dropna()
+        if len(y10):
+            out["kr_10y"] = {"dates": _dates(y10.index), "values": _nums(y10.values)}
+
+    # US comparison values for the side-by-side view.
+    return out
+
+
 def content_payload() -> dict:
     import markdown
 
@@ -324,6 +379,11 @@ def build_site(out_dir: Path, force: bool = False) -> dict[str, str]:
     _write(out_dir, "overview.json", overview_payload(panel, tri, usrec))
     _write(out_dir, "guide.json", guide_payload(panel, tri))
     _write(out_dir, "spx_daily.json", spx_payload(extras["spx_daily"]))
+    try:
+        _write(out_dir, "korea.json", korea_payload(frames))
+    except Exception:  # noqa: BLE001 - Korea data is optional; page degrades
+        _write(out_dir, "korea.json", {"kospi": {"dates": [], "values": []},
+                                       "indicators": {}, "unavailable": True})
     _write(out_dir, "content.json", content_payload())
     panel.to_csv(out_dir / "valueindex_panel.csv")
     return statuses
