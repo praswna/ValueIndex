@@ -6,12 +6,23 @@ on:
     - cron: "0 22 * * *"
   workflow_dispatch: {}
 
+# pages/id-token needed for the GitHub Pages deployment.
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# Avoid overlapping deploys.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -20,21 +31,31 @@ jobs:
           python-version: "3.11"
 
       - name: Install package
-        run: pip install -e .
+        run: pip install -e ".[site]"
 
       - name: Fetch live data into the bundled snapshot
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python scripts/refresh_sample_data.py
 
-      - name: Commit and push if the snapshot changed
+      - name: Build static site data (docs/data)
+        run: python scripts/build_site_data.py
+
+      - name: Commit refreshed snapshot + site data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/valueindex/sample_data
+          git add src/valueindex/sample_data docs/data
           if git diff --cached --quiet; then
             echo "No data changes today."
-            exit 0
+          else
+            git commit -m "chore: refresh market data + rebuild site"
+            git push
           fi
-          git commit -m "chore: refresh market data snapshot"
-          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deploy
+        uses: actions/deploy-pages@v4

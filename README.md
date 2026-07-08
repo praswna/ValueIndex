@@ -1,13 +1,40 @@
 # ValueIndex 📊
 
-미국 주식시장의 밸류에이션 지표들(Shiller CAPE, 버핏지수 등)을 자동 수집해서
-한 화면에서 비교하는 Streamlit 대시보드입니다. **API 키·가입 전혀 불필요**, 전부
-무료 공개 데이터만 씁니다.
+미국·한국 주식시장의 밸류에이션 지표들(Shiller CAPE, 버핏지수 등)을 자동 수집해서
+한 화면에서 비교하는 대시보드입니다. **API 키·가입 전혀 불필요**, 전부 무료 공개
+데이터만 씁니다.
 
-A Streamlit dashboard that collects and compares US market valuation
-indicators (Shiller CAPE, Buffett Indicator, and friends). No API keys needed.
+**두 가지 형태로 제공됩니다:**
 
-## 빠른 시작
+1. **정적 웹사이트 (정본)** — GitHub Pages: **https://praswna.github.io/ValueIndex/**
+   서버가 없어 **즉시 로딩**되고, GitHub Actions가 매일 아침 데이터를 갱신·재배포합니다.
+   콜드 스타트가 없어 폰에서 상시 접속하기 좋습니다.
+2. **Streamlit 앱 (로컬용)** — 개발·오프라인 확인용. 아래 참고. (Streamlit Cloud
+   배포는 콜드 스타트 때문에 폐기했습니다.)
+
+정적 사이트와 Streamlit 앱은 **같은 Python 코어**(수집·지표·통계·백테스트)를
+공유합니다 — 정적 사이트는 그 계산 결과를 `docs/data/*.json`으로 굽고, 브라우저
+JS가 인터랙티브 부분만 다시 계산합니다. 두 UI는 픽스처 기반 패리티 테스트로
+같은 값을 내도록 고정됩니다.
+
+## 정적 사이트 (권장)
+
+이미 배포되어 있으면 위 주소로 접속만 하면 됩니다. **최초 1회 설정** (저장소 소유자):
+
+1. GitHub 저장소 → **Settings → Pages → Build and deployment → Source: "GitHub Actions"**
+2. (선택) **Settings → Secrets and variables → Actions**에 `FRED_API_KEY` 추가
+   — GitHub 서버 IP는 FRED의 키리스 CSV가 막혀 있어, 무료 API 키
+   (fred.stlouisfed.org/docs/api/api_key.html)를 넣으면 FRED 지표가 실데이터로 채워집니다.
+3. **Actions 탭 → "Refresh market data" → Run workflow**로 첫 빌드·배포 실행.
+
+로컬에서 정적 사이트 미리보기:
+```bash
+pip install -e ".[site]"
+python scripts/build_site_data.py      # docs/data/*.json 생성 (오프라인이면 샘플)
+python -m http.server                  # http://localhost:8000/docs/index.html
+```
+
+## Streamlit 앱 (로컬)
 
 ```bash
 git clone <this-repo>
@@ -16,21 +43,10 @@ pip install -e .
 streamlit run app.py
 ```
 
-브라우저가 자동으로 열립니다. 첫 실행 시 무료 소스들에서 데이터를 수집해
-`data/cache/`에 저장하고, 이후에는 인터넷 없이도 동작합니다(캐시가 오래되면
-자동 갱신). 네트워크가 안 되는 환경에서도 번들된 샘플 데이터로 항상 실행됩니다.
-
-### 처음 실행 후 확인할 것
-
-1. **사이드바 "데이터 상태"** — 🟢 실시간(또는 🔵 캐시)로 표시되면 실데이터로
-   동작 중입니다. ⚪ 샘플 데이터로 남아 있으면 수집이 실패한 것입니다.
-2. **소스 진단 실행**:
-   ```bash
-   python scripts/check_live_sources.py
-   ```
-   소스별로 OK/FAIL과 실패 원인을 표로 보여줍니다.
-3. 특정 소스가 계속 실패하면 위 진단 출력을 복사해 GitHub 이슈로 남겨주세요.
-   실패한 소스가 있어도 앱은 캐시/샘플로 계속 동작합니다.
+Windows PowerShell에서는 `&&`가 안 되니 두 줄로 나눠 실행하세요.
+첫 실행 시 무료 소스에서 데이터를 수집해 `data/cache/`에 저장하고, 이후에는 인터넷
+없이도 동작합니다. 사이드바 "데이터 상태"에서 소스별 상태를 확인할 수 있고,
+`python scripts/check_live_sources.py`로 어떤 소스가 살아 있는지 진단할 수 있습니다.
 
 ## 페이지 구성
 
@@ -40,6 +56,8 @@ streamlit run app.py
 | 📈 비교 차트 | 지표 겹쳐 보기 (Z-점수/백분위/원값), 경기침체 음영, 상관관계 히트맵 |
 | 🔍 지표 상세 | 전체 히스토리 + ±σ 밴드 + 분포 히스토그램 + 평균회귀 반감기(AR(1) 적합) |
 | 🌡️ 시장 온도계 | 🧠 심리(CNN 공포·탐욕, AAII, 신용융자, 미시간대) + 📌 자주 참고하는 매크로(기준금리·CPI·실업률·M2·기대인플레) + 거시(VIX·금리차·하이일드·금·유가) — 등급 없는 참고 지표 |
+| 🇰🇷 한국 시장 | KOSPI 지수·PER/PBR/배당(σ 등급, ⚠️ 짧은 히스토리) + 미국 PER 비교 + 환율·금리 (정적 사이트 전용) |
+| ⏱️ 주기별 숫자 | 지표를 하루/일주일/한 달 갱신 주기로 묶어 "얼마나 자주 봐야 하나"를 보여줌 (정적 사이트 전용) |
 | 📚 지표 가이드 | 초보자용 지표 해설(정의→비유→공식→해석→한계), CAPE vs 10년 수익률 **조건부 분위 팬차트**(커널 분위 회귀), FAQ |
 | 🧭 투자 시작 가이드 | 무엇부터 할지 순서 + 🧮 Bogle 기대수익률 계산기 + 🎲 적립식 몬테카를로 시뮬레이션 + 📐 규칙·공식 치트시트(72의 법칙·4% 룰·100−나이·ERP) |
 | 🧘 투자 규율 | 행동 편향 대처, 드로다운 차트, 시나리오 규칙, 매수 전 체크리스트 |
@@ -72,11 +90,15 @@ streamlit run app.py
 
 ```bash
 pip install -e ".[dev]"
-pytest                 # 오프라인 단위 테스트 (fixture 기반)
+pytest                 # 오프라인 단위 테스트 (fixture 기반, 93개)
+pytest -m e2e          # JS↔Python 패리티 (브라우저, playwright 필요)
 pytest -m network      # 라이브 소스 스모크 테스트 (네트워크 필요, 수동 실행)
 ```
 
-오프라인 강제 실행: `VALUEINDEX_OFFLINE=1 streamlit run app.py`
+패리티 테스트는 정적 사이트의 JS 이식본(stats/quant/backtest/mc)이 Python 원본과
+같은 값을 내는지 브라우저에서 검증합니다. 실행 전 `python scripts/build_site_data.py`와
+`python scripts/build_parity_fixtures.py`가 필요합니다(CI에서 자동). 오프라인 강제
+실행: `VALUEINDEX_OFFLINE=1 streamlit run app.py`
 
 ## 데이터 자동 갱신 (GitHub Actions)
 
@@ -100,16 +122,24 @@ python scripts/refresh_sample_data.py   # 라이브 데이터로 샘플 교체
 python scripts/generate_sample_data.py  # 보간 샘플 재생성
 ```
 
-## Streamlit Cloud 무료 배포 (선택)
+## 아키텍처 (정적 사이트)
 
-폰으로 상시 접속하고 싶다면:
+```
+GitHub Actions (매일 07:00 KST 또는 docs/ 커밋 시)
+  refresh_sample_data.py   무료 소스에서 실데이터 수집 → sample_data/*.csv (+_meta.json)
+  build_site_data.py       기존 valueindex 모듈로 계산 → docs/data/*.json
+  → 커밋 → Pages 배포 (콜드 스타트 0초)
 
-1. 이 저장소를 GitHub에 푸시
-2. [share.streamlit.io](https://share.streamlit.io) 에서 GitHub 로그인 → **New app**
-3. 저장소 선택, 진입점 `app.py` 지정 → **Deploy**
+브라우저 (docs/*.html + assets/js)
+  사전계산 JSON 로드 → 정적 뷰 즉시 렌더
+  stats/quant/backtest/mc .js  사용자 입력에 반응하는 부분만 재계산
+  (Python 원본과 패리티 테스트로 값 일치 보장)
+```
 
-몇 분 뒤 `https://<앱이름>.streamlit.app` 주소가 생깁니다. `requirements.txt`가
-포함되어 있어 별도 설정이 필요 없습니다.
+- `docs/assets/vendor/plotly-cartesian-*.min.js`는 내장(vendor)이라 외부 CDN 의존이
+  없습니다 — 오프라인·사내망에서도 동일하게 동작합니다.
+- 모든 한국어 텍스트·색상·등급 밴드는 Python(`registry.py`, `stats.RATINGS`,
+  `content/*.md`)에 단일 소스로 남고 `registry.json`/`content.json`으로만 전달됩니다.
 
 ## 알아둘 것
 
@@ -121,11 +151,11 @@ python scripts/generate_sample_data.py  # 보간 샘플 재생성
 - FRED CSV 헤더가 다시 바뀌어도 파서가 두 형식(`DATE`/`observation_date`)을 모두
   처리합니다. 공식 FRED API 키 방식이 필요해지면 이슈로 남겨주세요.
 
-## 향후 아이디어 (기능 동결 — 구현하지 않고 기록만)
+## 향후 아이디어
 
-- 한국 시장(KOSPI) 지표 추가
 - 등급 변화 알림 (배포 환경에서)
 - 사용자 정의 백테스트 규칙 조합기
+- 한국 버핏지수 정밀화 (KRX 시가총액 시계열 확보 시)
 
 ---
 
