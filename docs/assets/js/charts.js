@@ -27,10 +27,19 @@ export function baseLayout(registry, overrides = {}, height = 420) {
   );
 }
 
-export const CONFIG = { responsive: true, displayModeBar: false };
+export const CONFIG = { responsive: true, displayModeBar: false, scrollZoom: false };
 
+// Mobile-friendly render: lock every axis (fixedrange) and disable drag so a
+// touch on the chart scrolls the page instead of zooming/panning. Tooltips
+// (hover/tap) still work.
 export function render(el, traces, layout) {
-  return Plotly.newPlot(el, traces, layout, CONFIG);
+  const lay = { ...layout, dragmode: false };
+  lay.xaxis = { ...(lay.xaxis || {}), fixedrange: true };
+  lay.yaxis = { ...(lay.yaxis || {}), fixedrange: true };
+  for (const k of Object.keys(lay)) {
+    if (/^[xy]axis\d+$/.test(k)) lay[k] = { ...lay[k], fixedrange: true };
+  }
+  return Plotly.newPlot(el, traces, lay, CONFIG);
 }
 
 export function lineTrace(dates, values, name, color, extra = {}) {

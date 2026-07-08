@@ -50,7 +50,7 @@ function renderIndicator(key) {
   const sec = document.createElement("section");
   sec.innerHTML = `
     <h3>${m.label_ko}</h3>
-    <div class="grid-2" style="grid-template-columns: 1fr 3fr; align-items: start;">
+    <div class="split">
       <div class="card" title="${m.what_ko}">
         <div class="metric-label">현재 (${m.unit})</div>
         <div class="metric-value">${fmt(last, m.unit, registry)}</div>

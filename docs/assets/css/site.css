@@ -46,6 +46,11 @@ h3 { font-size: 1.05rem; margin: 22px 0 4px; }
 @media (max-width: 480px) {
   .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
 }
+/* metric + chart split; collapses to stacked on phones */
+.split { display: grid; grid-template-columns: 1fr 3fr; gap: 14px;
+  align-items: start; }
+@media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+
 .card { background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px 16px; }
 .metric-label { font-size: 0.84rem; color: var(--ink-2); }
@@ -101,7 +106,20 @@ details.vi { background: var(--surface); border: 1px solid var(--border);
 details.vi summary { cursor: pointer; font-weight: 600; font-size: 0.95rem; }
 details.vi[open] summary { margin-bottom: 8px; }
 
-.chart { width: 100%; margin: 8px 0 4px; }
+.chart { width: 100%; margin: 8px 0 4px; touch-action: pan-y; }
+
+/* phone refinements */
+@media (max-width: 640px) {
+  main { padding: 14px 12px 50px; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.15rem; margin-top: 26px; }
+  .metric-value { font-size: 1.45rem; }
+  .vi-nav a { padding: 11px 8px; font-size: 0.88rem; }
+  .vi-brand { font-size: 0.95rem; }
+  table.vi th, table.vi td { padding: 7px 8px; font-size: 0.85rem; }
+  .controls { gap: 12px; }
+  .control select, .control input[type="number"] { min-width: 0; width: 100%; }
+}
 hr { border: none; border-top: 1px solid var(--grid); margin: 30px 0; }
 
 footer.vi { max-width: 1100px; margin: 0 auto; padding: 14px 16px 40px;
