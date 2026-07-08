@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from valueindex.fetchers.fred import _parse_fredgraph_csv
+from valueindex.fetchers.fred import _parse_api_json, _parse_fredgraph_csv
 from valueindex.fetchers.multpl import _parse_table_html
 from valueindex.fetchers.shiller import _clean_data_sheet, _parse_shiller_date
 from valueindex.fetchers.stooq import _parse_stooq_csv
@@ -26,6 +26,16 @@ class TestFred:
     def test_garbage_raises(self):
         with pytest.raises(ValueError):
             _parse_fredgraph_csv("foo,bar\n1,2\n", "X")
+
+    def test_official_api_json(self):
+        df = _parse_api_json((FIXTURES / "fred_api.json").read_text(), "GDP")
+        assert list(df.columns) == ["date", "value"]
+        assert len(df) == 3  # "." observation dropped
+        assert df["value"].iloc[-1] == pytest.approx(259.745)
+
+    def test_official_api_empty_raises(self):
+        with pytest.raises(ValueError):
+            _parse_api_json('{"observations": []}', "GDP")
 
 
 class TestShillerDate:

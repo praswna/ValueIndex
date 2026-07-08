@@ -117,6 +117,10 @@ def build_panel(sources: dict[str, pd.DataFrame]) -> pd.DataFrame:
     sh = sources["shiller"].set_index("date").sort_index()
 
     cape = sh["cape"]
+    # Shiller's downloadable file can lag by months; fill the gap with
+    # multpl's current Shiller-PE values (file values win where present).
+    if "multpl_shiller_pe" in sources:
+        cape = cape.combine_first(to_monthly(sources["multpl_shiller_pe"]))
     ecy = sh["ecy"]
     if ecy.dropna().empty:
         ecy = excess_cape_yield(sh["cape"], sh["gs10"], sh["cpi"])

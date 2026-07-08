@@ -69,6 +69,9 @@ MULTPL_PAGES = {
     "pe": "https://www.multpl.com/s-p-500-pe-ratio/table/by-month",
     "pb": "https://www.multpl.com/s-p-500-price-to-book/table/by-quarter",
     "div_yield": "https://www.multpl.com/s-p-500-dividend-yield/table/by-month",
+    # Extends CAPE past the end of Shiller's own file (the pinned download
+    # can lag by many months; multpl publishes the current monthly value).
+    "shiller_pe": "https://www.multpl.com/shiller-pe/table/by-month",
 }
 
 # --- Stooq (daily OHLC / gold) --------------------------------------------------

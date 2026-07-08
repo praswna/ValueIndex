@@ -326,6 +326,9 @@ def gen_multpl(sh: pd.DataFrame) -> dict[str, pd.DataFrame]:
         "multpl_div_yield": pd.DataFrame(
             {"date": div_yield.index, "value": div_yield.values.round(2)}
         ),
+        "multpl_shiller_pe": pd.DataFrame(
+            {"date": s.index, "value": s["cape"].values.round(2)}
+        ),
     }
 
 

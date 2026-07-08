@@ -1,15 +1,25 @@
-"""FRED fetcher using the keyless fredgraph.csv endpoint.
+"""FRED fetcher: keyless fredgraph.csv endpoint, or the official API when
+FRED_API_KEY is set (free key from fred.stlouisfed.org/docs/api/api_key.html
+— needed on datacenter IPs like GitHub Actions, which the CSV endpoint
+blocks).
 
 Returns tidy frames with columns: date, value.
 """
 from __future__ import annotations
 
 import io
+import json
+import os
 
 import pandas as pd
 
 from .. import config
 from . import http
+
+FRED_API_URL = (
+    "https://api.stlouisfed.org/fred/series/observations"
+    "?series_id={sid}&api_key={key}&file_type=json"
+)
 
 
 def _parse_fredgraph_csv(text: str, series_id: str) -> pd.DataFrame:
@@ -36,7 +46,29 @@ def _parse_fredgraph_csv(text: str, series_id: str) -> pd.DataFrame:
     return out.dropna(subset=["value"]).reset_index(drop=True)
 
 
+def _parse_api_json(text: str, series_id: str) -> pd.DataFrame:
+    """Parse the official API's observations JSON into (date, value)."""
+    payload = json.loads(text)
+    obs = payload.get("observations")
+    if not obs:
+        raise ValueError(f"FRED API for {series_id}: no observations")
+    out = pd.DataFrame(
+        {
+            "date": pd.to_datetime([o["date"] for o in obs]),
+            "value": pd.to_numeric(
+                [None if o["value"] == "." else o["value"] for o in obs],
+                errors="coerce",
+            ),
+        }
+    )
+    return out.dropna(subset=["value"]).reset_index(drop=True)
+
+
 def fetch_series(series_id: str) -> pd.DataFrame:
+    api_key = os.environ.get("FRED_API_KEY", "").strip()
+    if api_key:
+        resp = http.get(FRED_API_URL.format(sid=series_id, key=api_key))
+        return _parse_api_json(resp.text, series_id)
     resp = http.get(config.FRED_CSV_URL.format(sid=series_id))
     return _parse_fredgraph_csv(resp.text, series_id)
 

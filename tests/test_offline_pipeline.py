@@ -32,17 +32,21 @@ class TestOfflinePipeline:
         assert not panel.isna().all().any()
 
     def test_sample_values_plausible(self, panel):
-        last = panel.dropna(how="all").iloc[-1]
-        assert 25 < last["cape"] < 55
-        assert 1.2 < last["buffett"] < 3.0
-        assert 15 < last["pe"] < 45
-        assert 0.2 < last["aiae"] < 0.6
+        # Each indicator's own latest value (sources may lag differently).
+        current = {k: panel[k].dropna().iloc[-1] for k in panel.columns}
+        assert 25 < current["cape"] < 55
+        assert 1.2 < current["buffett"] < 3.0
+        assert 15 < current["pe"] < 45
+        assert 0.2 < current["aiae"] < 0.6
 
     def test_summaries_work_for_all_valuation_keys(self, panel):
+        panel_end = panel.dropna(how="all").index[-1]
         for key in registry.VALUATION_KEYS:
             s = stats.summary(panel[key])
             assert 0 <= s.pctile <= 100
-            assert s.asof >= pd.Timestamp("2025-01-01")
+            # Real sources lag by varying amounts; anything within ~3 years
+            # of the panel end is a live series, not a broken one.
+            assert s.asof >= panel_end - pd.DateOffset(months=36)
 
     def test_time_machine_no_lookahead(self, panel):
         """Percentile at a past date must use only data up to that date."""
@@ -52,6 +56,24 @@ class TestOfflinePipeline:
         p_past = stats.summary(s_past).pctile
         # dot-com peak: should be at/near its own historical max at the time
         assert p_past > 97
+
+    def test_cape_splice_extends_past_shiller_file(self):
+        """When multpl's Shiller-PE runs past the Shiller file's end, the
+        panel CAPE is extended (file values win where both exist)."""
+        data = {name: loader._load_sample(name) for name in loader.SOURCES}
+        sh = data["shiller"]
+        last = sh["date"].max()
+        ext_dates = pd.date_range(last + pd.DateOffset(months=1), periods=6, freq="MS")
+        extension = pd.DataFrame({"date": ext_dates, "value": [39.9] * 6})
+        data["multpl_shiller_pe"] = pd.concat(
+            [data["multpl_shiller_pe"], extension], ignore_index=True
+        )
+        panel = indicators.build_panel(data)
+        cape = panel["cape"].dropna()
+        assert cape.index[-1] >= ext_dates[-1]
+        assert cape.iloc[-1] == pytest.approx(39.9)
+        # File value preserved where both sources overlap.
+        assert cape.loc[last] != 39.9
 
     def test_recessions_flagged(self):
         usrec = loader._load_sample("fred_USREC")
