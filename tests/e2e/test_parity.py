@@ -86,7 +86,7 @@ class TestStatsParity:
         else:
             assert got["delta_1y"] == pytest.approx(exp["delta_1y"], abs=1e-9)
 
-    def test_drawdown(self, site):
+    def test_drawdown_stats(self, site):
         page, _ = site
         case = next(c for c in FIXTURES["stats"] if c["fn"] == "drawdown")
         got = page.evaluate(
@@ -108,3 +108,65 @@ class TestStatsParity:
         assert got["argmin_date"] == exp["argmin_date"]
         assert got["last"] == pytest.approx(exp["last"], abs=1e-9)
         assert got["n_zero"] == exp["n_zero"]
+
+
+NEEDS_REGISTRY = """() => fetch("/docs/data/registry.json")
+    .then(r => r.json()).then(reg => { window.REGISTRY = reg; return true; })"""
+
+
+class TestQuantParity:
+    @pytest.fixture(scope="class", autouse=True)
+    def registry_loaded(self, site):
+        page, _ = site
+        page.evaluate(NEEDS_REGISTRY)
+
+    @pytest.mark.parametrize(
+        "case", [c for c in FIXTURES["quant"] if c["fn"] == "pca_composite"],
+        ids=lambda c: f"pca@{c['args']['asof']}",
+    )
+    def test_pca(self, site, case):
+        page, _ = site
+        got = page.evaluate(
+            """(args) => {
+                const q = window.VI.quant;
+                const az = q.alignedZFromPanel(window.PANEL, window.REGISTRY, args.asof);
+                const res = q.pcaComposite(window.REGISTRY.valuation_keys.filter(
+                    k => k in az.columns), az.columns);
+                const valid = res.composite.filter(x => x !== null);
+                return {
+                    usable: res.usable,
+                    weights: res.weights,
+                    explained: res.explained,
+                    composite_last: valid[valid.length - 1],
+                    n_valid: valid.length,
+                };
+            }""",
+            case["args"],
+        )
+        exp = case["expected"]
+        assert got["usable"] == exp["usable"]
+        assert got["n_valid"] == exp["n_valid"]
+        assert got["explained"] == pytest.approx(exp["explained"], abs=1e-6)
+        assert got["composite_last"] == pytest.approx(exp["composite_last"], abs=1e-6)
+        for k, w in exp["weights"].items():
+            assert got["weights"][k] == pytest.approx(w, abs=1e-6), k
+
+    @pytest.mark.parametrize(
+        "case", [c for c in FIXTURES["quant"] if c["fn"] == "nearest_analogs"],
+        ids=lambda c: f"analogs@{c['args']['asof']}",
+    )
+    def test_analogs(self, site, case):
+        page, _ = site
+        got = page.evaluate(
+            """(args) => {
+                const q = window.VI.quant;
+                const az = q.alignedZFromPanel(window.PANEL, window.REGISTRY, args.asof);
+                return q.nearestAnalogs(
+                    window.REGISTRY.valuation_keys, az.columns, az.dates);
+            }""",
+            case["args"],
+        )
+        exp = case["expected"]
+        assert [a["date"] for a in got] == [a["date"] for a in exp]
+        for g, e in zip(got, exp):
+            assert g["distance"] == pytest.approx(e["distance"], abs=1e-6)

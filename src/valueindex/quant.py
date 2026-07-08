@@ -68,16 +68,34 @@ class PcaComposite:
     explained_ratio: float        # share of total variance carried by PC1
 
 
-def pca_composite(aligned_z: pd.DataFrame, min_series: int = 4) -> PcaComposite:
+def pca_composite(aligned_z: pd.DataFrame, min_series: int = 4,
+                  min_obs: int = 24) -> PcaComposite:
     """First principal component of direction-aligned z-scored indicators.
 
     Indicators start at different dates, so the correlation matrix uses
     pairwise-complete observations and per-row scores use only the
     indicators available that month (weights renormalized). Rows with
     fewer than `min_series` indicators are dropped.
+
+    Robust to truncated histories (the time machine): columns with fewer
+    than `min_obs` observations are excluded, and correlation entries
+    with insufficient overlap are treated as 0 so the eigensolver always
+    converges.
     """
-    corr = aligned_z.corr(min_periods=24)
-    eigvals, eigvecs = np.linalg.eigh(corr.to_numpy())
+    usable = [c for c in aligned_z.columns if aligned_z[c].notna().sum() >= min_obs]
+    aligned_z = aligned_z[usable]
+    min_series = min(min_series, max(1, len(usable)))
+    if len(usable) == 1:
+        only = aligned_z[usable[0]].dropna()
+        comp = (only - only.mean()) / only.std()
+        return PcaComposite(
+            composite=comp,
+            weights=pd.Series({usable[0]: 1.0}),
+            explained_ratio=1.0,
+        )
+    corr = aligned_z.corr(min_periods=min_obs).fillna(0.0).to_numpy(copy=True)
+    np.fill_diagonal(corr, 1.0)
+    eigvals, eigvecs = np.linalg.eigh(corr)
     v1 = eigvecs[:, -1]
     if v1.sum() < 0:  # sign convention: composite up = more expensive
         v1 = -v1

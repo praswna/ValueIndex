@@ -16,7 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from valueindex import stats  # noqa: E402
+from valueindex import quant, registry, stats  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "data"
@@ -85,10 +85,59 @@ def drawdown_case(panel: dict) -> dict:
     }
 
 
+def aligned_z_from_panel(panel: dict, asof: str | None) -> pd.DataFrame:
+    """Mirror quant.js alignedZFromPanel: grid-truncated, per-column z."""
+    dates = pd.to_datetime(panel["dates"])
+    cols = {}
+    for key in registry.VALUATION_KEYS:
+        sign = 1 if registry.INDICATORS[key].higher_is_expensive else -1
+        s = pd.Series(panel["series"][key], index=dates, dtype=float)
+        if asof is not None:
+            s = s.loc[:asof]
+        cols[key] = stats.zscore(s.dropna()) * sign
+    return pd.DataFrame(cols)
+
+
+PCA_ASOF_DATES = [None, "2009-03-01", "2000-03-01", "1950-06-01", "1929-09-01"]
+
+
+def quant_cases(panel: dict) -> list[dict]:
+    cases = []
+    for asof in PCA_ASOF_DATES:
+        az = aligned_z_from_panel(panel, asof)
+        pca = quant.pca_composite(az)
+        analogs = quant.nearest_analogs(az)
+        cases.append(
+            {
+                "fn": "pca_composite",
+                "args": {"asof": asof},
+                "expected": {
+                    "usable": list(pca.weights.index),
+                    "weights": {k: float(w) for k, w in pca.weights.items()},
+                    "explained": float(pca.explained_ratio),
+                    "composite_last": float(pca.composite.iloc[-1]),
+                    "n_valid": int(pca.composite.notna().sum()),
+                },
+            }
+        )
+        cases.append(
+            {
+                "fn": "nearest_analogs",
+                "args": {"asof": asof},
+                "expected": [
+                    {"date": a.date.strftime("%Y-%m-%d"), "distance": float(a.distance)}
+                    for a in analogs
+                ],
+            }
+        )
+    return cases
+
+
 def main() -> None:
     panel = json.loads((DATA / "panel.json").read_text(encoding="utf-8"))
     fixtures = {
         "stats": stats_cases(panel) + [drawdown_case(panel)],
+        "quant": quant_cases(panel),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(fixtures, indent=1), encoding="utf-8")

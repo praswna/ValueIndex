@@ -58,6 +58,39 @@ class TestPcaComposite:
         # sign convention: expensive (high factor) -> high composite
         assert corr > 0
 
+    def test_time_machine_truncation_regression(self):
+        """Columns that are empty or near-empty after truncation (e.g. PB
+        at asof=2000-03) must not blow up the eigensolver."""
+        rng = np.random.default_rng(7)
+        idx = monthly_index(600)
+        factor = pd.Series(np.cumsum(rng.normal(0, 1, 600)), index=idx)
+        z = pd.DataFrame(
+            {
+                "a": factor + rng.normal(0, 0.3, 600),
+                "b": factor + rng.normal(0, 0.3, 600),
+                "empty": pd.Series(np.nan, index=idx),
+                "one_point": pd.Series([np.nan] * 599 + [1.0], index=idx),
+            }
+        )
+        res = quant.pca_composite(z, min_series=2)
+        assert "empty" not in res.weights.index
+        assert "one_point" not in res.weights.index
+        assert res.composite.notna().sum() > 500
+
+    def test_single_usable_column(self):
+        rng = np.random.default_rng(8)
+        idx = monthly_index(200)
+        z = pd.DataFrame(
+            {
+                "a": pd.Series(rng.normal(0, 1, 200), index=idx),
+                "b": pd.Series(np.nan, index=idx),
+            }
+        )
+        res = quant.pca_composite(z)
+        assert list(res.weights.index) == ["a"]
+        assert res.explained_ratio == 1.0
+        assert abs(res.composite.std() - 1) < 1e-9
+
     def test_handles_staggered_starts(self):
         rng = np.random.default_rng(6)
         idx = monthly_index(600)

@@ -233,5 +233,280 @@
     "n_zero": 444
    }
   }
+ ],
+ "quant": [
+  {
+   "fn": "pca_composite",
+   "args": {
+    "asof": null
+   },
+   "expected": {
+    "usable": [
+     "cape",
+     "ecy",
+     "buffett",
+     "pe",
+     "pb",
+     "div_yield",
+     "fed_spread",
+     "trend_dev",
+     "aiae"
+    ],
+    "weights": {
+     "cape": 0.39039926991357765,
+     "ecy": 0.31219047268635947,
+     "buffett": 0.38268679603806754,
+     "pe": 0.20173975395256197,
+     "pb": 0.37470086993729557,
+     "div_yield": 0.35458317414258156,
+     "fed_spread": 0.13838252011881358,
+     "trend_dev": 0.36685235561819257,
+     "aiae": 0.3783081609141502
+    },
+    "explained": 0.6731442785188809,
+    "composite_last": 2.785988779956411,
+    "n_valid": 1867
+   }
+  },
+  {
+   "fn": "nearest_analogs",
+   "args": {
+    "asof": null
+   },
+   "expected": [
+    {
+     "date": "2000-01-01",
+     "distance": 1.0042133682313419
+    },
+    {
+     "date": "2021-06-01",
+     "distance": 1.0346347128566384
+    },
+    {
+     "date": "1997-01-01",
+     "distance": 1.7028794522447999
+    },
+    {
+     "date": "2017-12-01",
+     "distance": 1.8849838655995428
+    }
+   ]
+  },
+  {
+   "fn": "pca_composite",
+   "args": {
+    "asof": "2009-03-01"
+   },
+   "expected": {
+    "usable": [
+     "cape",
+     "ecy",
+     "buffett",
+     "pe",
+     "pb",
+     "div_yield",
+     "fed_spread",
+     "trend_dev",
+     "aiae"
+    ],
+    "weights": {
+     "cape": 0.38282510223596994,
+     "ecy": 0.34214675111500503,
+     "buffett": 0.38603650126421485,
+     "pe": 0.23828706895684248,
+     "pb": 0.36307795997071285,
+     "div_yield": 0.33998246632797385,
+     "fed_spread": 0.17733960448519356,
+     "trend_dev": 0.34527514880588944,
+     "aiae": 0.36400231885287043
+    },
+    "explained": 0.6998183033742923,
+    "composite_last": 1.315099497765436,
+    "n_valid": 1659
+   }
+  },
+  {
+   "fn": "nearest_analogs",
+   "args": {
+    "asof": "2009-03-01"
+   },
+   "expected": [
+    {
+     "date": "2002-03-01",
+     "distance": 3.645526297865665
+    },
+    {
+     "date": "1992-01-01",
+     "distance": 4.667860956910004
+    },
+    {
+     "date": "1999-01-01",
+     "distance": 4.79566325901501
+    },
+    {
+     "date": "1961-11-01",
+     "distance": 4.890925843804243
+    }
+   ]
+  },
+  {
+   "fn": "pca_composite",
+   "args": {
+    "asof": "2000-03-01"
+   },
+   "expected": {
+    "usable": [
+     "cape",
+     "ecy",
+     "buffett",
+     "pe",
+     "div_yield",
+     "fed_spread",
+     "trend_dev",
+     "aiae"
+    ],
+    "weights": {
+     "cape": 0.39468198037688723,
+     "ecy": 0.35534061866941424,
+     "buffett": 0.409831950730687,
+     "pe": 0.359369550065265,
+     "div_yield": 0.34644571458845763,
+     "fed_spread": 0.1755744671955624,
+     "trend_dev": 0.34225733216960075,
+     "aiae": 0.39097233869420944
+    },
+    "explained": 0.7032653320086063,
+    "composite_last": 3.711094266461149,
+    "n_valid": 1551
+   }
+  },
+  {
+   "fn": "nearest_analogs",
+   "args": {
+    "asof": "2000-03-01"
+   },
+   "expected": [
+    {
+     "date": "1929-09-01",
+     "distance": 1.2653722542704195
+    },
+    {
+     "date": "1901-06-01",
+     "distance": 1.8124575042601838
+    },
+    {
+     "date": "1968-12-01",
+     "distance": 1.892596600778923
+    },
+    {
+     "date": "1965-11-01",
+     "distance": 1.9421279273524044
+    }
+   ]
+  },
+  {
+   "fn": "pca_composite",
+   "args": {
+    "asof": "1950-06-01"
+   },
+   "expected": {
+    "usable": [
+     "cape",
+     "ecy",
+     "buffett",
+     "pe",
+     "div_yield",
+     "fed_spread",
+     "trend_dev"
+    ],
+    "weights": {
+     "cape": 0.38250080396267416,
+     "ecy": 0.39274698404528285,
+     "buffett": -0.3762736502509454,
+     "pe": 0.3890619485157637,
+     "div_yield": 0.3914217513224382,
+     "fed_spread": 0.38908363808410357,
+     "trend_dev": 0.3192096756085288
+    },
+    "explained": 0.6598342409122447,
+    "composite_last": -1.9100685949317224,
+    "n_valid": 954
+   }
+  },
+  {
+   "fn": "nearest_analogs",
+   "args": {
+    "asof": "1950-06-01"
+   },
+   "expected": [
+    {
+     "date": "1917-06-01",
+     "distance": 0.4720200567743447
+    },
+    {
+     "date": "1941-10-01",
+     "distance": 0.5069208406001856
+    },
+    {
+     "date": "1926-04-01",
+     "distance": 0.7330828111746079
+    },
+    {
+     "date": "1937-11-01",
+     "distance": 0.9008000075805312
+    }
+   ]
+  },
+  {
+   "fn": "pca_composite",
+   "args": {
+    "asof": "1929-09-01"
+   },
+   "expected": {
+    "usable": [
+     "cape",
+     "ecy",
+     "pe",
+     "div_yield",
+     "fed_spread",
+     "trend_dev"
+    ],
+    "weights": {
+     "cape": 0.4394123806414216,
+     "ecy": 0.4296787802305223,
+     "pe": 0.3852998354607398,
+     "div_yield": 0.4069152717231827,
+     "fed_spread": 0.3635525278802537,
+     "trend_dev": 0.41962657621139965
+    },
+    "explained": 0.7204272104092778,
+    "composite_last": 2.3157394490283885,
+    "n_valid": 705
+   }
+  },
+  {
+   "fn": "nearest_analogs",
+   "args": {
+    "asof": "1929-09-01"
+   },
+   "expected": [
+    {
+     "date": "1901-06-01",
+     "distance": 0.7913714633365996
+    },
+    {
+     "date": "1905-03-01",
+     "distance": 1.2126551246953712
+    },
+    {
+     "date": "1886-11-01",
+     "distance": 1.2233161220894355
+    },
+    {
+     "date": "1892-04-01",
+     "distance": 1.2704821765724625
+    }
+   ]
+  }
  ]
 }
