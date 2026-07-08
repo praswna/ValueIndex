@@ -82,6 +82,14 @@ STOOQ_SYMBOLS = {
     "kospi_daily": "^kospi",  # KOSPI index daily OHLC
 }
 
+# Yahoo Finance chart symbols — primary source for daily prices (Stooq
+# blocks datacenter IPs). ^GSPC goes back to 1927, better than Stooq.
+YAHOO_SYMBOLS = {
+    "spx_daily": "^GSPC",    # S&P 500 index
+    "gold": "GC=F",          # COMEX gold futures (USD/oz proxy)
+    "kospi_daily": "^KS11",  # KOSPI index
+}
+
 # --- Korea market -------------------------------------------------------------
 # KRX 정보데이터시스템 (data.krx.co.kr) — keyless but needs a POST with a
 # referer header; the endpoint id changes rarely. Tolerant parser + sample

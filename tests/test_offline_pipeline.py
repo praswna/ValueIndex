@@ -62,8 +62,10 @@ class TestOfflinePipeline:
         panel CAPE is extended (file values win where both exist)."""
         data = {name: loader._load_sample(name) for name in loader.SOURCES}
         sh = data["shiller"]
-        last = sh["date"].max()
-        ext_dates = pd.date_range(last + pd.DateOffset(months=1), periods=6, freq="MS")
+        sh_last = sh["date"].max()
+        # Extend strictly past whatever both sources currently cover.
+        both_last = max(sh_last, data["multpl_shiller_pe"]["date"].max())
+        ext_dates = pd.date_range(both_last + pd.DateOffset(months=1), periods=6, freq="MS")
         extension = pd.DataFrame({"date": ext_dates, "value": [39.9] * 6})
         data["multpl_shiller_pe"] = pd.concat(
             [data["multpl_shiller_pe"], extension], ignore_index=True
@@ -72,8 +74,8 @@ class TestOfflinePipeline:
         cape = panel["cape"].dropna()
         assert cape.index[-1] >= ext_dates[-1]
         assert cape.iloc[-1] == pytest.approx(39.9)
-        # File value preserved where both sources overlap.
-        assert cape.loc[last] != 39.9
+        # Shiller file value preserved where both sources overlap.
+        assert cape.loc[sh_last] != 39.9
 
     def test_recessions_flagged(self):
         usrec = loader._load_sample("fred_USREC")

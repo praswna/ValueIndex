@@ -289,20 +289,19 @@ def gen_aiae() -> pd.DataFrame:
     idx = pd.date_range("1951-10-01", "2026-04-01", freq="QS")
     ratio = interp(idx, AIAE_ANCHORS, noise=0.005).clip(0.05, 0.6)
     gdp = interp(idx, GDP_ANCHORS, log=True)
-    debt = gdp * 2.6  # rough total real-economy debt, billions
-    equities_bil = ratio / (1 - ratio) * debt
-    eq_nf_mil = equities_bil * 0.75 * 1000
-    eq_f_mil = equities_bil * 0.25 * 1000
+    # All Z.1 series are millions USD (match real FRED units).
+    debt_mil = gdp * 2.6 * 1000  # rough total real-economy debt, millions
+    equities_mil = ratio / (1 - ratio) * debt_mil
     return pd.DataFrame(
         {
             "date": idx,
-            "equities_nonfin": eq_nf_mil.round(0),
-            "equities_fin": eq_f_mil.round(0),
-            "debt_business": (debt * 0.30).round(1),
-            "debt_household": (debt * 0.30).round(1),
-            "debt_federal": (debt * 0.25).round(1),
-            "debt_state_local": (debt * 0.08).round(1),
-            "debt_world": (debt * 0.07).round(1),
+            "equities_nonfin": (equities_mil * 0.75).round(0),
+            "equities_fin": (equities_mil * 0.25).round(0),
+            "debt_business": (debt_mil * 0.30).round(0),
+            "debt_household": (debt_mil * 0.30).round(0),
+            "debt_federal": (debt_mil * 0.25).round(0),
+            "debt_state_local": (debt_mil * 0.08).round(0),
+            "debt_world": (debt_mil * 0.07).round(0),
         }
     )
 

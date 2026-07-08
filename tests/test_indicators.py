@@ -46,20 +46,21 @@ class TestTrendDeviation:
 
 class TestAiae:
     def test_known_ratio_and_bounds(self):
+        # All series in the same unit (millions); ratio is unit-invariant.
         idx = monthly_index(1)
         inputs = pd.DataFrame(
             {
                 "date": idx,
-                "equities_nonfin": [30_000_000.0],  # 30,000 B
-                "equities_fin": [10_000_000.0],     # 10,000 B
-                "debt_business": [20_000.0],
-                "debt_household": [20_000.0],
-                "debt_federal": [15_000.0],
-                "debt_state_local": [3_000.0],
-                "debt_world": [2_000.0],
+                "equities_nonfin": [30_000_000.0],
+                "equities_fin": [10_000_000.0],   # equities total 40,000,000
+                "debt_business": [20_000_000.0],
+                "debt_household": [20_000_000.0],
+                "debt_federal": [15_000_000.0],
+                "debt_state_local": [3_000_000.0],
+                "debt_world": [2_000_000.0],       # debt total 60,000,000
             }
         )
-        # equities 40,000B / (40,000 + 60,000) = 0.4
+        # 40,000,000 / (40,000,000 + 60,000,000) = 0.4
         val = indicators.aiae(inputs).iloc[0]
         assert val == pytest.approx(0.4)
         assert 0 < val < 1

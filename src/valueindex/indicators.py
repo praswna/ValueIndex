@@ -64,12 +64,12 @@ def trend_deviation(real_price: pd.Series) -> pd.Series:
 def aiae(inputs: pd.DataFrame) -> pd.Series:
     """Aggregate Investor Allocation to Equities (Philosophical Economics).
 
-    equities / (equities + liabilities of real-economy borrowers).
-    Equity series are in millions USD, debt series in billions -> equities
-    are divided by 1000. Result is a fraction in [0, 1].
+    equities / (equities + liabilities of real-economy borrowers). All Z.1
+    series are in the same unit (millions USD), so the ratio is unit-
+    invariant — no scaling needed. Result is a fraction in [0, 1].
     """
     df = inputs.set_index("date").sort_index()
-    equities = (df["equities_nonfin"] + df["equities_fin"]) / 1000.0
+    equities = df["equities_nonfin"] + df["equities_fin"]
     debt = (
         df["debt_business"]
         + df["debt_household"]

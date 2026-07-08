@@ -15,7 +15,7 @@ from typing import Callable
 import pandas as pd
 
 from . import cache, config
-from .fetchers import fred, korea, multpl, sentiment, shiller, stooq
+from .fetchers import fred, korea, multpl, prices, sentiment, shiller, stooq
 
 
 class DataStatus(str, Enum):
@@ -44,7 +44,7 @@ SOURCES: dict[str, tuple[Callable[[], pd.DataFrame], str]] = {
         for key in config.MULTPL_PAGES
     },
     **{
-        f"stooq_{key}": ((lambda k=key: stooq.fetch_daily(k)), "stooq")
+        f"stooq_{key}": ((lambda k=key: prices.fetch_daily(k)), "stooq")
         for key in config.STOOQ_SYMBOLS
     },
     **{
