@@ -31,5 +31,6 @@ valueindex = ["sample_data/*.csv", "sample_data/*.json", "content/*.md"]
 testpaths = ["tests"]
 markers = [
     "network: tests that hit live data sources (run manually: pytest -m network)",
+    "e2e: JS parity tests in a browser (run manually: pytest -m e2e; needs playwright)",
 ]
-addopts = "-m 'not network'"
+addopts = "-m 'not network and not e2e'"

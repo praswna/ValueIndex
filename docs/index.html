@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 밸류에이션 개요</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>📊 밸류에이션 개요</h1>
+  <p class="caption" id="tagline">데이터 로딩 중...</p>
+  <div id="chart-cape" class="chart"></div>
+</main>
+<script type="module">
+  import { load, fmt } from "./assets/js/data.js";
+  import { injectNav, injectFooter } from "./assets/js/nav.js";
+  import { baseLayout, render, lineTrace, recessionShapes } from "./assets/js/charts.js";
+  import { cleanPairs } from "./assets/js/stats.js";
+
+  injectNav();
+  const { meta, registry, panel, overview } = await load("registry", "panel", "overview");
+  injectFooter(meta, registry);
+
+  document.getElementById("tagline").textContent =
+    `셸 검증 페이지 — CAPE 최신값 ${fmt(overview.summaries.cape.current, "배", registry)} (${overview.summaries.cape.asof})`;
+
+  const { dates, values } = cleanPairs(panel.dates, panel.series.cape);
+  const layout = baseLayout(registry, {
+    yaxis_title: "CAPE",
+    shapes: recessionShapes(registry, overview.recessions, dates[0]),
+  });
+  render(
+    document.getElementById("chart-cape"),
+    [lineTrace(dates, values, "Shiller CAPE", registry.series_colors.cape)],
+    layout
+  );
+</script>
+</body>
+</html>
