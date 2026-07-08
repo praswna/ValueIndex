@@ -45,6 +45,12 @@ pip install -e .
 streamlit run collector.py
 ```
 
+**터미널이 익숙하지 않으면** 저장소 폴더의 실행 파일을 더블클릭하세요 — 첫 실행 때
+필요한 패키지까지 자동 설치하고 브라우저에 수집기를 띄웁니다:
+- Windows: `run_collector.bat` 더블클릭
+- macOS: `run_collector.command` 더블클릭 (최초 1회는 Finder에서 우클릭 → 열기 로
+  Gatekeeper 허용)
+
 브라우저에 뜨는 화면에서 버튼만 누르면 됩니다:
 1. **🔄 전체 수집 시작** — 30개 소스를 집 IP로 실시간 수집(진행 표·소스별 성공/실패 표시),
    성공분을 `sample_data/`에 저장
