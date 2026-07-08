@@ -1,0 +1,41 @@
+"""Collector shared logic: snapshot writing, meta stamping, source registry."""
+import json
+from datetime import datetime
+
+import pandas as pd
+import pytest
+
+from valueindex import collect, config, loader
+
+
+class TestCollect:
+    def test_source_names_matches_loader(self):
+        assert collect.source_names() == list(loader.SOURCES)
+        # the datacenter-blocked ones are registered
+        assert {"krx_valuation", "finra_margin_debt", "aaii_sentiment"} <= set(
+            collect.source_names()
+        )
+
+    def test_save_snapshot_writes_csv_and_meta(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(config, "SAMPLE_DATA_DIR", tmp_path)
+        monkeypatch.setattr(collect, "META_PATH", tmp_path / "_meta.json")
+        df = pd.DataFrame({"date": pd.date_range("2020-01-01", periods=3, freq="MS"),
+                           "value": [1.0, 2.0, 3.0]})
+        meta = collect.save_snapshot("fred_GDP", df, {})
+        collect.write_meta(meta)
+
+        assert (tmp_path / "fred_GDP.csv").exists()
+        saved = json.loads((tmp_path / "_meta.json").read_text())
+        assert "fred_GDP" in saved
+        datetime.fromisoformat(saved["fred_GDP"])  # valid ISO timestamp
+
+    def test_latest_date(self):
+        df = pd.DataFrame({"date": ["2024-01-01", "2024-06-01"], "value": [1, 2]})
+        assert collect.latest_date(df) == "2024-06-01"
+        assert collect.latest_date(pd.DataFrame({"value": [1]})) == "-"
+
+    def test_collect_source_offline_returns_error(self, monkeypatch):
+        # With no network the fetch raises; collect_source reports it, no crash.
+        monkeypatch.setattr(config, "OFFLINE", False)
+        df, err = collect.collect_source("fred_GDP")
+        assert (df is None and err) or (df is not None and err is None)

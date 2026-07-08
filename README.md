@@ -34,6 +34,26 @@ python scripts/build_site_data.py      # docs/data/*.json 생성 (오프라인�
 python -m http.server                  # http://localhost:8000/docs/index.html
 ```
 
+## 🛰️ 로컬 데이터 수집기 (GUI)
+
+KRX PER/PBR·FINRA 신용융자·AAII 설문은 클라우드(GitHub Actions) IP가 차단되어
+자동 갱신에서 빠집니다. **집 PC(주거용 IP)에서는 이 소스들도 열리므로**, GUI 수집기로
+모든 데이터를 직접 수집해 올릴 수 있습니다:
+
+```bash
+pip install -e .
+streamlit run collector.py
+```
+
+브라우저에 뜨는 화면에서 버튼만 누르면 됩니다:
+1. **🔄 전체 수집 시작** — 30개 소스를 집 IP로 실시간 수집(진행 표·소스별 성공/실패 표시),
+   성공분을 `sample_data/`에 저장
+2. **🏗️ 사이트 데이터 재생성** — `docs/data/*.json` 다시 굽기
+3. **📤 커밋 & 푸시** — 저장소에 올리면 GitHub Pages가 1~2분 뒤 자동 배포
+
+PER/PBR·신용융자·AAII는 월 단위 데이터라 **한 달에 한 번쯤** 돌려주면 충분합니다.
+그 사이 매일 도는 Actions는 이 소스들의 마지막 실데이터를 덮어쓰지 않고 유지합니다.
+
 ## Streamlit 앱 (로컬)
 
 ```bash
