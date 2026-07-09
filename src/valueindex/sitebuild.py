@@ -338,6 +338,140 @@ def korea_payload(frames: dict[str, pd.DataFrame]) -> dict:
     return out
 
 
+def _wname(row) -> str:
+    nm = str(row["name"])
+    pc = str(row.get("put_call") or "").lower()
+    if pc == "put":
+        return nm + " · 풋"
+    if pc == "call":
+        return nm + " · 콜"
+    return nm
+
+
+def _agg_quarter(df: pd.DataFrame) -> pd.DataFrame:
+    """Sum a whale's rows for one quarter by (cusip, put_call)."""
+    df = df.copy()
+    for c in ("cusip", "name", "class", "put_call"):
+        df[c] = df[c].fillna("")
+    g = df.groupby(["cusip", "put_call"], as_index=False, dropna=False).agg(
+        name=("name", "first"), cls=("class", "first"),
+        value_usd=("value_usd", "sum"), shares=("shares", "sum"))
+    return g.sort_values("value_usd", ascending=False).reset_index(drop=True)
+
+
+def _one_whale(slug: str, meta: dict, wdf: pd.DataFrame, status: str) -> dict | None:
+    quarters = sorted(wdf["quarter"].dropna().astype(str).unique(), reverse=True)
+    if not quarters:
+        return None
+    latest_q = quarters[0]
+    prior_q = quarters[1] if len(quarters) > 1 else None
+    lat = _agg_quarter(wdf[wdf["quarter"].astype(str) == latest_q])
+    pri = _agg_quarter(wdf[wdf["quarter"].astype(str) == prior_q]) if prior_q else None
+    total = float(lat["value_usd"].sum())
+
+    pri_shares, pri_val = {}, {}
+    if pri is not None:
+        for _, r in pri.iterrows():
+            pri_shares[(r["cusip"], r["put_call"])] = r["shares"]
+            pri_val[(r["cusip"], r["put_call"])] = r["value_usd"]
+    lat_keys = set(zip(lat["cusip"], lat["put_call"]))
+    pri_keys = set(pri_shares)
+
+    # Disambiguate issuer names that map to more than one security within this
+    # whale (e.g. two different iShares ETFs both named "ISHARES TR") by
+    # appending the class — otherwise the chart's categorical y-axis collapses
+    # them onto one row.
+    keyrows = {}
+    for df in (pri, lat):  # lat wins on overlap
+        if df is not None:
+            for _, r in df.iterrows():
+                keyrows[(r["cusip"], r["put_call"])] = r
+    from collections import Counter
+    name_counts = Counter(_wname(r) for r in keyrows.values())
+    dname = {}
+    for key, r in keyrows.items():
+        nm = _wname(r)
+        if name_counts[nm] > 1 and r["cls"]:
+            nm = f"{nm} ({r['cls']})"
+        dname[key] = nm
+
+    top = []
+    for _, r in lat.head(12).iterrows():
+        key = (r["cusip"], r["put_call"])
+        prev = pri_shares.get(key)
+        if prev is None or pd.isna(prev):
+            kind, chg_pct = ("new" if pri is not None else "flat"), None
+        elif r["shares"] > prev * 1.001:
+            kind, chg_pct = "up", (r["shares"] / prev - 1) * 100 if prev else None
+        elif r["shares"] < prev * 0.999:
+            kind, chg_pct = "down", (r["shares"] / prev - 1) * 100 if prev else None
+        else:
+            kind, chg_pct = "flat", 0.0
+        top.append({
+            "name": dname[key], "cusip": r["cusip"], "class": r["cls"],
+            "value": _num(r["value_usd"]),
+            "weight": _num(r["value_usd"] / total * 100 if total else None),
+            "shares": _num(r["shares"]), "chg_kind": kind, "chg_pct": _num(chg_pct),
+        })
+
+    changes = {"new": [], "exited": [], "increased": [], "decreased": []}
+    if pri is not None:
+        for _, r in lat.iterrows():
+            key = (r["cusip"], r["put_call"])
+            if key not in pri_keys:
+                changes["new"].append(dname[key])
+        for _, r in pri.iterrows():
+            key = (r["cusip"], r["put_call"])
+            if key not in lat_keys:
+                changes["exited"].append(dname[key])
+        moves = []
+        for _, r in lat.iterrows():
+            key = (r["cusip"], r["put_call"])
+            prev = pri_shares.get(key)
+            if prev is None or pd.isna(prev) or not prev:
+                continue
+            dv = abs(float(r["value_usd"]) - float(pri_val.get(key, 0)))
+            if r["shares"] > prev * 1.02:
+                moves.append(("increased", dname[key], dv))
+            elif r["shares"] < prev * 0.98:
+                moves.append(("decreased", dname[key], dv))
+        moves.sort(key=lambda t: -t[2])
+        for kind, nm, _ in moves:
+            changes[kind].append(nm)
+    changes = {k: v[:8] for k, v in changes.items()}
+
+    return {
+        "slug": slug, "name_ko": meta["name_ko"], "region": meta["region"],
+        "note": meta["note"], "as_of": latest_q, "prior_quarter": prior_q,
+        "total_value": _num(total), "holdings_count": int(len(lat)),
+        "top5_weight": _num(lat.head(5)["value_usd"].sum() / total * 100 if total else None),
+        "status": status, "top": top, "changes": changes,
+    }
+
+
+def whales_payload(edf: pd.DataFrame | None, sample_edf: pd.DataFrame | None,
+                   status: str) -> dict:
+    """Per-whale 13F snapshot with quarter-over-quarter changes. Whales missing
+    from the loaded frame (e.g. a kill CIK) are backfilled from the sample so
+    every configured whale always renders."""
+    present = set(edf["whale"].unique()) if edf is not None and len(edf) else set()
+    sample_present = (set(sample_edf["whale"].unique())
+                      if sample_edf is not None and len(sample_edf) else set())
+    whales = []
+    for slug, meta in config.WHALES.items():
+        if slug in present:
+            wdf, st = edf[edf["whale"] == slug], status
+        elif slug in sample_present:
+            wdf, st = sample_edf[sample_edf["whale"] == slug], "sample"
+        else:
+            continue
+        w = _one_whale(slug, meta, wdf, st)
+        if w:
+            whales.append(w)
+    return {"whales": whales,
+            "generated_quarter": whales[0]["as_of"] if whales else None}
+
+
 def content_payload() -> dict:
     import markdown
 
@@ -384,6 +518,12 @@ def build_site(out_dir: Path, force: bool = False) -> dict[str, str]:
     except Exception:  # noqa: BLE001 - Korea data is optional; page degrades
         _write(out_dir, "korea.json", {"kospi": {"dates": [], "values": []},
                                        "indicators": {}, "unavailable": True})
+    try:
+        _write(out_dir, "whales.json", whales_payload(
+            frames.get("edgar_whales"), loader._load_sample("edgar_whales"),
+            statuses.get("edgar_whales", "sample")))
+    except Exception:  # noqa: BLE001 - whale tracker is optional; page degrades
+        _write(out_dir, "whales.json", {"whales": [], "unavailable": True})
     _write(out_dir, "content.json", content_payload())
     panel.to_csv(out_dir / "valueindex_panel.csv")
     return statuses

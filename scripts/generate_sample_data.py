@@ -411,6 +411,84 @@ def gen_korea() -> dict[str, pd.DataFrame]:
     return out
 
 
+# ------------------------------------------------------------------- edgar ----
+# Approximate recent 13F holdings for the whale tracker, so the page renders
+# and quarter-over-quarter changes are visible offline. Values are plausible
+# and based on widely-reported positions, but are NOT exact filings — the
+# Actions run replaces them with live EDGAR data. Two quarters each so new
+# buys / sold-outs / trims show up. Columns match fetchers.edgar.COLUMNS.
+# Holding row: (name, cusip, class, put_call, sh_latest, val_latest, sh_prior, val_prior)
+EDGAR_LAT_Q, EDGAR_PRI_Q = "2026-03-31", "2025-12-31"
+EDGAR_LAT_F, EDGAR_PRI_F = "2026-05-15", "2026-02-13"
+
+EDGAR_HOLDINGS: dict[str, list[tuple]] = {
+    "berkshire": [
+        ("APPLE INC", "037833100", "COM", "", 300e6, 63e9, 400e6, 84e9),
+        ("AMERICAN EXPRESS CO", "025816109", "COM", "", 151.6e6, 47e9, 151.6e6, 44e9),
+        ("BANK AMER CORP", "060505104", "COM", "", 600e6, 19e9, 700e6, 25e9),
+        ("COCA COLA CO", "191216100", "COM", "", 400e6, 28e9, 400e6, 27e9),
+        ("CHEVRON CORP NEW", "166764100", "COM", "", 118e6, 18e9, 118e6, 17e9),
+        ("OCCIDENTAL PETE CORP", "674599105", "COM", "", 265e6, 13e9, 255e6, 12e9),
+        ("MOODYS CORP", "615369105", "COM", "", 24.6e6, 12e9, 24.6e6, 11.5e9),
+        ("KRAFT HEINZ CO", "500754106", "COM", "", 325e6, 9e9, 325e6, 8.8e9),
+        ("CHUBB LIMITED", "H1467J104", "COM", "", 27e6, 8e9, 27e6, 7.8e9),
+        ("DOMINOS PIZZA INC", "25754A201", "COM", "", 2.6e6, 1.3e9, None, None),
+        ("PARAMOUNT GLOBAL", "92556H206", "CL B", "", None, None, 63e6, 0.7e9),
+    ],
+    "nps": [
+        ("APPLE INC", "037833100", "COM", "", 30e6, 6.5e9, 31e6, 6.6e9),
+        ("MICROSOFT CORP", "594918104", "COM", "", 18e6, 8e9, 17e6, 7.2e9),
+        ("NVIDIA CORP", "67066G104", "COM", "", 40e6, 5e9, 30e6, 3.6e9),
+        ("AMAZON COM INC", "023135106", "COM", "", 25e6, 5.5e9, 24e6, 4.8e9),
+        ("ALPHABET INC", "02079K305", "CAP STK CL A", "", 20e6, 3.6e9, 20e6, 3.4e9),
+        ("META PLATFORMS INC", "30303M102", "CL A", "", 6e6, 3.9e9, 6e6, 3.4e9),
+        ("BROADCOM INC", "11135F101", "COM", "", 15e6, 3.5e9, 12e6, 2.5e9),
+        ("ELI LILLY & CO", "532457108", "COM", "", 3e6, 2.6e9, 3e6, 2.4e9),
+        ("JPMORGAN CHASE & CO", "46625H100", "COM", "", 10e6, 2.6e9, 10e6, 2.4e9),
+        ("TESLA INC", "88160R101", "COM", "", 6e6, 1.6e9, 7e6, 1.9e9),
+        ("COSTCO WHSL CORP NEW", "22160K105", "COM", "", 1.5e6, 1.4e9, None, None),
+        ("INTEL CORP", "458140100", "COM", "", None, None, 20e6, 0.5e9),
+    ],
+    "bridgewater": [
+        ("ISHARES TR", "464287200", "CORE S&P500", "", 5e6, 3e9, 4.5e6, 2.6e9),
+        ("SPDR S&P 500 ETF TR", "78462F103", "TR UNIT", "", 3e6, 1.8e9, 3.2e6, 1.9e9),
+        ("ISHARES TR", "464287234", "MSCI EMG MKT", "", 30e6, 1.3e9, 28e6, 1.2e9),
+        ("SPDR GOLD TR", "78463V107", "GOLD SHS", "", 4e6, 1.0e9, 3e6, 0.7e9),
+        ("ALPHABET INC", "02079K305", "CAP STK CL A", "", 4e6, 0.72e9, 4e6, 0.68e9),
+        ("META PLATFORMS INC", "30303M102", "CL A", "", 1e6, 0.65e9, 1e6, 0.57e9),
+        ("NVIDIA CORP", "67066G104", "COM", "", 5e6, 0.63e9, 4e6, 0.48e9),
+        ("PROCTER & GAMBLE CO", "742718109", "COM", "", 3e6, 0.5e9, 3e6, 0.49e9),
+        ("COCA COLA CO", "191216100", "COM", "", 6e6, 0.42e9, 6e6, 0.4e9),
+        ("COSTCO WHSL CORP NEW", "22160K105", "COM", "", 0.4e6, 0.38e9, None, None),
+        ("WALMART INC", "931142103", "COM", "", None, None, 4e6, 0.35e9),
+    ],
+    "scion": [
+        ("ESTEE LAUDER COS INC", "518439104", "CL A", "", 200e3, 17e6, 100e3, 8e6),
+        ("HCA HEALTHCARE INC", "40412C101", "COM", "", 50e3, 18e6, 40e3, 13e6),
+        ("BRUKER CORP", "116794108", "COM", "", 175e3, 8e6, None, None),
+        ("ALIBABA GROUP HLDG LTD", "01609W102", "SPON ADS", "Put", 150e3, 20e6, 100e3, 12e6),
+        ("BAIDU INC", "056752108", "SPON ADR", "Put", 100e3, 10e6, 75e3, 7e6),
+        ("JD COM INC", "47215P106", "ADR", "", None, None, 250e3, 9e6),
+    ],
+}
+
+
+def gen_edgar() -> pd.DataFrame:
+    rows = []
+    for whale, holdings in EDGAR_HOLDINGS.items():
+        for name, cusip, cls, pc, sh_l, val_l, sh_p, val_p in holdings:
+            if sh_l is not None:
+                rows.append({"whale": whale, "quarter": EDGAR_LAT_Q, "filed": EDGAR_LAT_F,
+                             "cusip": cusip, "name": name, "class": cls, "put_call": pc,
+                             "value_usd": val_l, "shares": sh_l})
+            if sh_p is not None:
+                rows.append({"whale": whale, "quarter": EDGAR_PRI_Q, "filed": EDGAR_PRI_F,
+                             "cusip": cusip, "name": name, "class": cls, "put_call": pc,
+                             "value_usd": val_p, "shares": sh_p})
+    from valueindex.fetchers.edgar import COLUMNS  # noqa: E402
+    return pd.DataFrame(rows)[COLUMNS]
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     sh = gen_shiller()
@@ -420,6 +498,7 @@ def main() -> None:
     frames.update(gen_multpl(sh))
     frames.update(gen_stooq(sh))
     frames.update(gen_korea())
+    frames["edgar_whales"] = gen_edgar()
     for name, df in frames.items():
         path = OUT / f"{name}.csv"
         df.to_csv(path, index=False)

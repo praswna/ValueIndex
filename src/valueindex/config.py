@@ -110,6 +110,42 @@ FRED_KR_SERIES = {
     "kr_10y": "IRLTLT01KRM156N",   # Korea 10Y govt bond yield, monthly (OECD)
 }
 
+# --- SEC EDGAR 13F ("whale" institutional holdings) --------------------------
+# Keyless JSON/XML. SEC policy requires a descriptive User-Agent carrying a
+# contact address; requests without one get 403. Reachable from GitHub Actions
+# runners but blocked by this sandbox's egress policy, so the parser is
+# fixture-tested and the first Actions run does the live validation (same
+# pattern as KRX/FINRA/AAII). Quarterly data; a wrong/kill CIK simply falls
+# back to the bundled sample for that one whale.
+EDGAR_UA = "ValueIndex research (praswna@gmail.com)"
+EDGAR_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik10}.json"
+EDGAR_ARCHIVE_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc}"
+# 13F value column switched from $1000s to whole dollars for filings on/after
+# this date (SEC 2022 amendments); older filings are scaled up by 1000.
+EDGAR_DOLLARS_FROM = "2023-01-01"
+
+# slug -> display + CIK (validated on the first Actions run). region "KR"
+# gets the "US-listed holdings only" caveat rendered in the UI.
+WHALES = {
+    "berkshire": {
+        "name_ko": "버크셔 해서웨이 (버핏)", "cik": "0001067983", "region": "US",
+        "note": "워런 버핏의 지주회사. 현금비중 변화와 집중 베팅이 핵심 관전 포인트.",
+    },
+    "nps": {
+        "name_ko": "국민연금공단 (NPS)", "cik": "0001608046", "region": "KR",
+        "note": "13F는 미국 상장주식만 공시합니다 — 국민연금의 국내 주식·채권·"
+                "부동산은 여기에 나오지 않습니다(전체 기금의 일부만 보임).",
+    },
+    "bridgewater": {
+        "name_ko": "브리지워터 (레이 달리오)", "cik": "0001350694", "region": "US",
+        "note": "세계 최대 헤지펀드. ETF 중심의 분산형이라 개별 종목보다 자산배분 흐름을 봄.",
+    },
+    "scion": {
+        "name_ko": "사이온 자산운용 (마이클 버리)", "cik": "0001649339", "region": "US",
+        "note": "'빅쇼트'의 마이클 버리. 종목 수가 적어 분기마다 포트폴리오가 크게 바뀜.",
+    },
+}
+
 # --- Cache TTLs ------------------------------------------------------------------
 CACHE_TTL = {
     "shiller": timedelta(days=7),
@@ -122,6 +158,7 @@ CACHE_TTL = {
     "aaii": timedelta(days=7),
     "krx": timedelta(days=1),
     "worldbank": timedelta(days=30),
+    "edgar": timedelta(days=1),
 }
 
 REQUEST_TIMEOUT = 15

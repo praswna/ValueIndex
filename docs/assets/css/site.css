@@ -107,6 +107,18 @@ details.vi[open] summary { margin-bottom: 8px; }
 
 .chart { width: 100%; margin: 8px 0 4px; touch-action: pan-y; }
 
+/* whale tracker */
+.whale-card { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px; margin: 18px 0; }
+.whale-head h2 { margin: 2px 0 2px; }
+.note-sm { font-size: 0.86rem; margin: 8px 0 10px; }
+.whale-changes { font-size: 0.9rem; padding-top: 6px; }
+.chg-head { font-weight: 600; color: var(--ink-2); margin-bottom: 8px; }
+.chg-row { display: flex; gap: 8px; padding: 5px 0;
+  border-bottom: 1px dashed var(--grid); }
+.chg-title { flex: 0 0 84px; white-space: nowrap; font-size: 0.85rem; }
+.chg-names { color: var(--ink-2); }
+
 /* phone refinements */
 @media (max-width: 640px) {
   main { padding: 14px 12px 50px; }
