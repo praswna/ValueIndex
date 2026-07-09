@@ -60,6 +60,24 @@ class TestEdgarParse:
         with pytest.raises(ValueError):
             edgar._parse_infotable("<informationTable></informationTable>", 1.0)
 
+    def test_failed_whale_keeps_last_known(self, monkeypatch):
+        # one whale fetches live, another fails -> the failed one is backfilled
+        # from its last-known rows instead of vanishing.
+        def fake_fetch(slug, cik):
+            if slug == "berkshire":
+                return pd.DataFrame([_row("berkshire", "2026-03-31", "A", "AAA", 1, 1)])
+            raise ValueError("kill CIK")
+
+        def fake_last_known(slug):
+            return pd.DataFrame([_row(slug, "2025-12-31", "Z", "ZZZ", 2, 2)])
+
+        monkeypatch.setattr(edgar, "_fetch_whale", fake_fetch)
+        monkeypatch.setattr(edgar, "_last_known", fake_last_known)
+        out = edgar.fetch_13f_holdings()
+        whales = set(out["whale"].unique())
+        assert "berkshire" in whales           # live
+        assert "nps" in whales                 # backfilled last-known
+
     def test_recent_13f_newest_first(self):
         subs = {"filings": {"recent": {
             "form": ["4", "13F-HR", "8-K", "13F-HR", "13F-HR"],

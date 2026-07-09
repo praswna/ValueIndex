@@ -147,17 +147,41 @@ def _fetch_whale(slug: str, cik: str) -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)[COLUMNS]
 
 
+def _last_known(slug: str) -> pd.DataFrame | None:
+    """A whale's rows from the existing bundled file (last live snapshot or,
+    failing that, the example) so a failed fetch keeps its data instead of
+    dropping the whale from the page entirely."""
+    path = config.SAMPLE_DATA_DIR / "edgar_whales.csv"
+    if not path.exists():
+        return None
+    try:
+        df = pd.read_csv(path, dtype={"cusip": str})
+    except Exception:  # noqa: BLE001
+        return None
+    rows = df[df["whale"] == slug]
+    return rows if len(rows) else None
+
+
 def fetch_13f_holdings() -> pd.DataFrame:
     """All whales in one long frame. Whales that fail (blocked, kill CIK,
-    format change) are skipped so the others still populate; sitebuild
-    backfills any missing whale from the bundled sample."""
-    frames = []
+    format change) fall back to their last-known/example rows so none vanish.
+    Raises only if not a single whale fetched live (then the loader falls back
+    to the bundled sample as a whole)."""
+    frames, got = [], set()
     for slug, w in config.WHALES.items():
         try:
             frames.append(_fetch_whale(slug, w["cik"]))
+            got.add(slug)
         except Exception as exc:  # noqa: BLE001 - report and continue
             print(f"[edgar] {slug} (CIK {w['cik']}) failed: "
                   f"{type(exc).__name__}: {exc}", file=sys.stderr)
-    if not frames:
+    if not got:
         raise RuntimeError("EDGAR: no whales fetched")
+    for slug in config.WHALES:
+        if slug not in got:
+            prev = _last_known(slug)
+            if prev is not None:
+                frames.append(prev)
+                print(f"[edgar] {slug}: kept last-known data (live fetch failed)",
+                      file=sys.stderr)
     return pd.concat(frames, ignore_index=True)
