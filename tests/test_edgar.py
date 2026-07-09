@@ -41,6 +41,19 @@ class TestEdgarParse:
         assert "edgar_whales" in loader.SOURCES
         assert "edgar" in config.CACHE_TTL
 
+    def test_whales_config_well_formed(self):
+        for slug, w in config.WHALES.items():
+            assert w["cik"].isdigit() and len(w["cik"]) == 10, slug
+            assert w["name_ko"] and w["note"], slug
+            assert w["region"] in ("US", "KR", "NO"), slug
+
+    def test_whale_without_any_data_is_skipped(self):
+        # a WHALES entry absent from both live and sample frames must not
+        # break the payload (new whales before their first collect).
+        df = pd.DataFrame([_row("berkshire", "2026-03-31", "A", "AAA", 1, 1)])
+        out = sitebuild.whales_payload(df, None, "live")
+        assert [w["slug"] for w in out["whales"]] == ["berkshire"]
+
     def test_parse_infotable_dollars(self):
         df = edgar._parse_infotable(INFOTABLE_XML, scale=1.0)
         assert len(df) == 2

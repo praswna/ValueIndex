@@ -9,7 +9,7 @@ const { meta, registry, whales } = await load("registry", "whales");
 injectFooter(meta, registry);
 
 const root = document.getElementById("whales");
-const FLAG = { US: "🇺🇸", KR: "🇰🇷" };
+const FLAG = { US: "🇺🇸", KR: "🇰🇷", NO: "🇳🇴" };
 // bar color encodes what the whale DID with the position last quarter
 const CHG = {
   new: { c: "#1baf7a", label: "신규" },
