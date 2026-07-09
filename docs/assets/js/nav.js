@@ -19,7 +19,6 @@ export function injectNav() {
   const nav = document.createElement("nav");
   nav.className = "vi-nav";
   nav.innerHTML = `<div class="vi-nav-inner">
-    <span class="vi-brand">ValueIndex</span>
     ${PAGES.map(
       ([href, label]) =>
         `<a href="${href}"${href === current ? ' class="active"' : ""}>${label}</a>`
