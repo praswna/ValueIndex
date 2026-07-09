@@ -2,7 +2,8 @@
 refresh-data GitHub Actions workflow).
 
 For a GUI version that runs on your home machine — reaching sources that
-block datacenter IPs (KRX, FINRA, AAII) — use `streamlit run collector.py`.
+block datacenter IPs (KRX, FINRA, AAII, SEC EDGAR) — run `python collector_gui.py`
+(a plain-Tkinter window; no Streamlit/browser).
 
 Run: python scripts/refresh_sample_data.py
 """

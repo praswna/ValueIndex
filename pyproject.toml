@@ -9,17 +9,19 @@ description = "US market valuation indicator comparison dashboard (CAPE, Buffett
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "streamlit>=1.35",
     "pandas>=2.0",
-    "plotly>=5.20",
     "requests>=2.31",
     "lxml>=5.0",
     "xlrd>=2.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "markdown>=3.5"]
+# The local collector GUI (collector_gui.py) uses only stdlib Tkinter + the
+# core deps above, plus markdown to rebuild the site — install with ".[site]".
+dev = ["pytest>=8", "markdown>=3.5", "plotly>=5.20"]
 site = ["markdown>=3.5"]
+# The legacy Streamlit dashboard (app.py) — no longer the canonical UI.
+app = ["streamlit>=1.35", "plotly>=5.20"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

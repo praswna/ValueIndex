@@ -36,36 +36,42 @@ python -m http.server                  # http://localhost:8000/docs/index.html
 
 ## 🛰️ 로컬 데이터 수집기 (GUI)
 
-KRX PER/PBR·FINRA 신용융자·AAII 설문은 클라우드(GitHub Actions) IP가 차단되어
-자동 갱신에서 빠집니다. **집 PC(주거용 IP)에서는 이 소스들도 열리므로**, GUI 수집기로
-모든 데이터를 직접 수집해 올릴 수 있습니다:
+KRX PER/PBR·FINRA 신용융자·AAII 설문·SEC EDGAR 큰손(13F)은 클라우드(GitHub
+Actions) IP가 차단되어 자동 갱신에서 빠집니다. **집 PC(주거용 IP)에서는 이 소스들도
+열리므로**, GUI 수집기로 모든 데이터를 직접 수집해 올릴 수 있습니다.
+
+수집기는 **파이썬 표준 라이브러리 Tkinter 창** 하나입니다 — Streamlit·브라우저·
+이메일 입력·무거운 의존성 없이 돕니다:
 
 ```bash
-pip install -e .
-streamlit run collector.py
+pip install -e ".[site]"     # 코어 + markdown (사이트 재생성용). streamlit 불필요
+python collector_gui.py
 ```
 
 **터미널이 익숙하지 않으면** 저장소 폴더의 실행 파일을 더블클릭하세요 — 첫 실행 때
-필요한 패키지까지 자동 설치하고 브라우저에 수집기를 띄웁니다:
+필요한 패키지까지 자동 설치하고 수집기 창을 엽니다:
 - Windows: `run_collector.bat` 더블클릭
 - macOS: `run_collector.command` 더블클릭 (최초 1회는 Finder에서 우클릭 → 열기 로
   Gatekeeper 허용)
 
-브라우저에 뜨는 화면에서 버튼만 누르면 됩니다:
-1. **🔄 전체 수집 시작** — 30개 소스를 집 IP로 실시간 수집(진행 표·소스별 성공/실패 표시),
-   성공분을 `sample_data/`에 저장
-2. **🏗️ 사이트 데이터 재생성** — `docs/data/*.json` 다시 굽기
-3. **📤 커밋 & 푸시** — 저장소에 올리면 GitHub Pages가 1~2분 뒤 자동 배포
+창의 버튼 3개를 순서대로 누르면 됩니다:
+1. **① 전체 수집** — 모든 소스를 집 IP로 실시간 수집(진행 막대·소스별 ✓/✗ 로그),
+   성공분을 `sample_data/`에 저장(실패한 소스는 기존 파일 유지)
+2. **② 사이트 재생성** — `docs/data/*.json` 다시 굽기
+3. **③ 커밋 & 푸시** — 저장소에 올리면 GitHub Pages가 1~2분 뒤 자동 배포
 
-PER/PBR·신용융자·AAII는 월 단위 데이터라 **한 달에 한 번쯤** 돌려주면 충분합니다.
+PER/PBR·신용융자·AAII·13F는 월/분기 단위라 **한 달에 한 번쯤** 돌려주면 충분합니다.
 그 사이 매일 도는 Actions는 이 소스들의 마지막 실데이터를 덮어쓰지 않고 유지합니다.
 
-## Streamlit 앱 (로컬)
+## Streamlit 앱 (로컬, 선택)
+
+정본은 정적 사이트입니다. 예전 Streamlit 대시보드가 필요하면 `app` 엑스트라로
+streamlit을 따로 설치하세요(코어 설치에는 포함되지 않습니다):
 
 ```bash
 git clone <this-repo>
 cd ValueIndex
-pip install -e .
+pip install -e ".[app]"
 streamlit run app.py
 ```
 

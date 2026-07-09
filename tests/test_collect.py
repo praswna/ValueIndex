@@ -39,3 +39,33 @@ class TestCollect:
         monkeypatch.setattr(config, "OFFLINE", False)
         df, err = collect.collect_source("fred_GDP")
         assert (df is None and err) or (df is not None and err is None)
+
+    def test_collect_all_summary(self, monkeypatch):
+        monkeypatch.setattr(collect, "source_names", lambda: ["a", "b"])
+
+        def fake(name):
+            if name == "a":
+                return pd.DataFrame({"date": ["2024-01-01"], "value": [1]}), None
+            return None, "boom"
+
+        monkeypatch.setattr(collect, "collect_source", fake)
+        monkeypatch.setattr(collect, "save_snapshot", lambda n, d, m: {**m, n: "t"})
+        monkeypatch.setattr(collect, "write_meta", lambda m: None)
+        logs, prog = [], []
+        r = collect.collect_all(log=logs.append,
+                                on_progress=lambda i, n: prog.append((i, n)))
+        assert r == {"ok": ["a"], "failed": ["b"], "total": 2}
+        assert prog[-1] == (2, 2)
+
+    def test_git_publish_noop_when_nothing_staged(self, monkeypatch):
+        import subprocess
+        calls = []
+
+        def fake_run(args, **kw):
+            calls.append(args)
+            # `git diff --cached --quiet` returning 0 => nothing staged
+            return subprocess.CompletedProcess(args, 0, stdout="", stderr="")
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert collect.git_publish(log=lambda _s: None) is True
+        assert ["git", "commit"] not in [c[:2] for c in calls]  # never committed
