@@ -1,17 +1,17 @@
 // Shared header nav + footer, injected on every page.
 
 const PAGES = [
-  ["index.html", "📊 개요"],
-  ["compare.html", "📈 비교"],
-  ["detail.html", "🔍 상세"],
-  ["thermometer.html", "🌡️ 온도계"],
-  ["korea.html", "🇰🇷 한국"],
-  ["whales.html", "🐋 큰손"],
-  ["cadence.html", "⏱️ 주기별"],
-  ["guide.html", "📚 가이드"],
-  ["start.html", "🧭 시작"],
-  ["discipline.html", "🧘 규율"],
-  ["lab.html", "🔬 실험실"],
+  ["index.html", "개요"],
+  ["compare.html", "비교"],
+  ["detail.html", "상세"],
+  ["thermometer.html", "온도계"],
+  ["korea.html", "한국"],
+  ["whales.html", "큰손"],
+  ["cadence.html", "주기별"],
+  ["guide.html", "가이드"],
+  ["start.html", "시작"],
+  ["discipline.html", "규율"],
+  ["lab.html", "실험실"],
 ];
 
 export function injectNav() {
