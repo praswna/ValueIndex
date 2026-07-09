@@ -69,3 +69,22 @@ class TestCollect:
         monkeypatch.setattr(subprocess, "run", fake_run)
         assert collect.git_publish(log=lambda _s: None) is True
         assert ["git", "commit"] not in [c[:2] for c in calls]  # never committed
+        # still integrates the remote and pushes any unpushed commit
+        assert ["git", "pull"] in [c[:2] for c in calls]
+        assert ["git", "push"] in [c[:2] for c in calls]
+
+    def test_git_publish_aborts_on_failed_rebase(self, monkeypatch):
+        import subprocess
+        calls = []
+
+        def fake_run(args, **kw):
+            calls.append(args)
+            rc = 1 if args[:2] == ["git", "pull"] else 0
+            if args[:3] == ["git", "diff", "--cached"]:
+                rc = 1  # something staged -> commit happens
+            return subprocess.CompletedProcess(args, rc, stdout="", stderr="")
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert collect.git_publish(log=lambda _s: None) is False
+        assert ["git", "rebase", "--abort"] in calls   # left in a clean state
+        assert ["git", "push"] not in [c[:2] for c in calls]

@@ -138,9 +138,17 @@ def git_publish(log=lambda _s: None, message: str | None = None) -> bool:
 
     run(["git", "add", *paths])
     staged = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO_ROOT)
-    if staged.returncode == 0:
-        log("변경사항이 없습니다 (커밋 생략).")
-        return True
-    if run(["git", "commit", "-m", msg]).returncode != 0:
+    if staged.returncode != 0:
+        if run(["git", "commit", "-m", msg]).returncode != 0:
+            return False
+    else:
+        log("새 변경사항 없음 — 미푸시 커밋이 있으면 그것만 올립니다.")
+
+    # The remote moves daily (Actions data refresh), so integrate it before
+    # pushing. On conflicts prefer our side ("theirs" during a rebase = the
+    # commits being replayed, i.e. the fresh local collect).
+    if run(["git", "pull", "--rebase", "-X", "theirs"]).returncode != 0:
+        run(["git", "rebase", "--abort"])
+        log("원격 변경 통합 실패 — 터미널에서 `git pull --rebase` 후 다시 시도하세요.")
         return False
     return run(["git", "push"]).returncode == 0
