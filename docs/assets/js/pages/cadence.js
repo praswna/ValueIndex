@@ -1,9 +1,9 @@
 // 주기별 숫자: 갱신 주기별 타일 3섹션 + 탭하면 팝업(차트·해석).
 
-import { load, fmt, ym } from "../data.js";
+import { load, fmt, fmtSigned, ym } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render, lineTrace, ratingBadge } from "../charts.js";
-import { cleanPairs, drawdown } from "../stats.js";
+import { cleanPairs, drawdown, percentileRanks, asofIndex, shiftDateStr } from "../stats.js";
 import { openModal } from "../modal.js";
 
 injectNav();
@@ -85,6 +85,13 @@ document.getElementById("monthly").innerHTML = tilesHtml(MONTHLY);
 
 function show(id) {
   const it = ALL[id];
+  const vals = it.series.values, dates = it.series.dates;
+  const yi = asofIndex(dates, shiftDateStr(dates[dates.length - 1], -1));
+  const d1y = yi >= 0 ? vals[vals.length - 1] - vals[yi] : null;
+  const clean = vals.filter((v) => v !== null);
+  const pct = percentileRanks(vals)[vals.length - 1];
+  const fmtV = (v) => (it.unit !== "" ? fmt(v, it.unit, registry)
+                                      : Math.round(v).toLocaleString("ko-KR"));
   openModal(`
     <h2 style="margin:0 0 2px">${it.label}
       ${it.rating ? ratingBadge(registry, it.rating) : ""}</h2>
@@ -92,8 +99,15 @@ function show(id) {
       typeof it.value === "number" && it.unit !== ""
         ? fmt(it.value, it.unit, registry)
         : Number(it.value).toLocaleString("ko-KR")} ${it.unit || ""}</div>
+    <div class="modal-stats">
+      <div>1년 변화<br><b>${d1y === null ? "-" : fmtSigned(d1y, 1)}</b></div>
+      <div>역사 백분위<br><b>${pct.toFixed(0)}/100</b></div>
+      <div>역사 범위<br><b>${fmtV(Math.min(...clean))}~${fmtV(Math.max(...clean))}</b></div>
+      <div>데이터 시작<br><b>${dates[0].slice(0, 4)}년</b></div>
+    </div>
     <div id="m-chart" class="chart"></div>
     <p class="modal-desc">${it.note}</p>
+    ${it.rating ? `<p><a href="detail.html#${it.id}">🔍 상세 팝업에서 ±σ 밴드·분포 보기</a></p>` : ""}
     <p class="caption">갱신 주기: <b>${it.cadence}</b> — 이 주기보다 자주 보는 것은
       새 정보가 아니라 소음입니다.</p>`);
   render(document.getElementById("m-chart"),

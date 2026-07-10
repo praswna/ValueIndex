@@ -2,9 +2,8 @@
 
 import { load, fmt, fmtSigned } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
-import { baseLayout, render, lineTrace, recessionShapes, hline } from "../charts.js";
 import { asofIndex, shiftDateStr } from "../stats.js";
-import { openModal } from "../modal.js";
+import { showContextPopup } from "../ctxpop.js";
 
 injectNav();
 const { meta, registry, context, overview } = await load("registry", "context", "overview");
@@ -49,34 +48,7 @@ for (const [group, title, desc] of SECTIONS) {
     <div class="tiles">${tiles}</div>`);
 }
 
-function show(key) {
-  const m = registry.indicators[key];
-  const s = context[key];
-  const { last, delta } = lastDelta(key);
-  openModal(`
-    <h2 style="margin:0 0 2px">${m.label_ko}</h2>
-    <div class="metric-value">${fmt(last, m.unit, registry)} ${m.unit || ""}
-      ${delta !== null
-        ? `<span class="metric-delta">1년 전 대비 ${fmtSigned(delta, 1)}</span>` : ""}</div>
-    <div id="m-chart" class="chart"></div>
-    <p class="modal-desc">${m.what_ko || ""}</p>
-    <p class="caption">${m.interpret_ko || ""}</p>
-    <p class="caption">${s.dates[0].slice(0, 4)}년~ · 출처: ${m.source} · 등급 없는
-      참고 지표입니다. 빨간 점선 = 관례적 기준선, 회색 음영 = 미국 경기침체.</p>`);
-  const shapes = [
-    ...(registry.guide_lines[key] || []).map((y) => hline(y, "#c22f2f")),
-    ...recessionShapes(registry, overview.recessions, s.dates[0]),
-  ];
-  render(document.getElementById("m-chart"),
-    [lineTrace(s.dates, s.values, m.label_ko, registry.series_colors[key])],
-    baseLayout(registry, {
-      showlegend: false, shapes,
-      margin: { l: 45, r: 10, t: 8, b: 30 },
-      yaxis: { title: { text: m.unit }, gridcolor: registry.chrome.grid },
-    }, 260));
-}
-
 root.addEventListener("click", (e) => {
   const tile = e.target.closest(".tile");
-  if (tile) show(tile.dataset.key);
+  if (tile) showContextPopup(registry, overview, context, tile.dataset.key);
 });
