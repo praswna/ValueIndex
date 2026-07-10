@@ -149,6 +149,43 @@ class TestWhalesPayload:
         assert by["berkshire"]["status"] == "live"
         assert by["scion"]["status"] == "sample"
 
+    def test_summarize_and_update_history(self, tmp_path):
+        df = pd.DataFrame([
+            _row("berkshire", "2026-03-31", "A", "AAA", 60, 1),
+            _row("berkshire", "2026-03-31", "B", "BBB", 40, 1),
+            _row("berkshire", "2025-12-31", "A", "AAA", 50, 1),
+        ])
+        path = tmp_path / "hist.csv"
+        merged = edgar.update_history(df, path=path)
+        assert len(merged) == 2
+        latest = merged[merged["quarter"] == "2026-03-31"].iloc[0]
+        assert latest["total_value"] == 100
+        assert latest["holdings_count"] == 2
+        assert latest["top5_weight"] == 100.0
+
+        # next snapshot: newer quarter arrives, older one rolls off the
+        # snapshot but STAYS in history; same-quarter rows are replaced.
+        df2 = pd.DataFrame([
+            _row("berkshire", "2026-06-30", "A", "AAA", 70, 1),
+            _row("berkshire", "2026-03-31", "A", "AAA", 65, 1),
+        ])
+        merged2 = edgar.update_history(df2, path=path)
+        assert list(merged2["quarter"]) == ["2025-12-31", "2026-03-31", "2026-06-30"]
+        assert merged2[merged2["quarter"] == "2026-03-31"]["total_value"].iloc[0] == 65
+
+    def test_history_attached_to_payload(self):
+        df = pd.DataFrame([_row("berkshire", "2026-03-31", "A", "AAA", 1, 1)])
+        hist = pd.DataFrame([
+            {"whale": "berkshire", "quarter": "2025-12-31", "filed": "f",
+             "total_value": 90.0, "holdings_count": 3, "top5_weight": 80.0},
+            {"whale": "berkshire", "quarter": "2026-03-31", "filed": "f",
+             "total_value": 100.0, "holdings_count": 2, "top5_weight": 100.0},
+        ])
+        out = sitebuild.whales_payload(df, None, "live", history=hist)
+        w = out["whales"][0]
+        assert w["history"]["quarters"] == ["2025-12-31", "2026-03-31"]
+        assert w["history"]["total_value"] == [90, 100]
+
     def test_put_call_suffix(self):
         df = pd.DataFrame([
             _row("scion", "2026-03-31", "X", "PUTCO", 9, 9, pc="Put"),

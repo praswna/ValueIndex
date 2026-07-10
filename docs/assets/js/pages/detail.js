@@ -80,7 +80,7 @@ function draw(key) {
       text: `현재 ${fmt(s.current, m.unit, registry)} (백분위 ${s.pctile.toFixed(0)})`,
       showarrow: false, font: { color: band.color } }],
     xaxis: { title: { text: `${m.label_ko} (${m.unit})` }, showgrid: false,
-             linecolor: "#c3c2b7" },
+             linecolor: registry.chrome.axis_line },
     yaxis: { title: { text: "개월 수" }, gridcolor: registry.chrome.grid },
   }, 320));
 

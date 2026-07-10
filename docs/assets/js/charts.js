@@ -3,23 +3,33 @@
 
 const FONT = 'system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
 
+// Effective theme: the nav toggle stamps <html data-theme>; otherwise follow
+// the system. data.js swaps registry.chrome for registry.chrome_dark when
+// dark, so all chrome lookups below stay theme-correct.
+export function isDark() {
+  const t = document.documentElement.getAttribute("data-theme");
+  if (t === "dark") return true;
+  if (t === "light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 export function baseLayout(registry, overrides = {}, height = 420) {
   const chrome = registry.chrome;
   return Object.assign(
     {
       height,
       margin: { l: 50, r: 10, t: 30, b: 40 },
-      plot_bgcolor: "#ffffff",
+      plot_bgcolor: chrome.plot_bg,
       paper_bgcolor: "rgba(0,0,0,0)",
-      font: { family: FONT, color: "#0b0b0b" },
+      font: { family: FONT, color: chrome.ink },
       hovermode: "x unified",
       legend: { orientation: "h", yanchor: "bottom", y: 1.02, x: 0 },
       xaxis: {
-        showgrid: false, linecolor: "#c3c2b7", ticks: "outside",
+        showgrid: false, linecolor: chrome.axis_line, ticks: "outside",
         tickcolor: chrome.grid,
       },
       yaxis: {
-        gridcolor: chrome.grid, zerolinecolor: "#c3c2b7",
+        gridcolor: chrome.grid, zerolinecolor: chrome.axis_line,
         linecolor: "rgba(0,0,0,0)",
       },
     },

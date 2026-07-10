@@ -92,10 +92,10 @@ function draw() {
       const top = 1 - (i / n), bottom = 1 - ((i + 1) / n) + 0.06;
       layout["yaxis" + ax] = {
         domain: [bottom, top - 0.02], gridcolor: registry.chrome.grid,
-        zerolinecolor: "#c3c2b7",
+        zerolinecolor: registry.chrome.axis_line,
       };
       layout["xaxis" + ax] = {
-        anchor: "y" + ax, showgrid: false, linecolor: "#c3c2b7",
+        anchor: "y" + ax, showgrid: false, linecolor: registry.chrome.axis_line,
         matches: i === 0 ? undefined : "x",
         showticklabels: i === n - 1,
       };

@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("vi-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ValueIndex — 투자 시작 가이드</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
@@ -55,6 +56,32 @@
   <div id="mc-chart" class="chart"></div>
   <div class="grid-4" id="mc-metrics"></div>
   <p class="caption" id="mc-note"></p>
+
+  <hr>
+  <h2>⚖️ 리밸런싱 도우미</h2>
+  <p>지금 보유 금액과 목표 비중을 넣으면 <b>얼마를 어디로 옮기면 되는지</b> 계산합니다.
+  입력값은 이 브라우저에만 저장되고 어디로도 전송되지 않습니다.</p>
+  <div class="controls">
+    <label class="control">주식 보유액 (만원)
+      <input type="number" id="rb-stock" min="0" step="10" value="2800"></label>
+    <label class="control">채권 보유액 (만원)
+      <input type="number" id="rb-bond" min="0" step="10" value="800"></label>
+    <label class="control">현금 보유액 (만원)
+      <input type="number" id="rb-cash" min="0" step="10" value="400"></label>
+  </div>
+  <div class="controls">
+    <label class="control">목표 주식 %
+      <input type="number" id="rb-tstock" min="0" max="100" step="5" value="70"></label>
+    <label class="control">목표 채권 %
+      <input type="number" id="rb-tbond" min="0" max="100" step="5" value="20"></label>
+    <label class="control">목표 현금 %
+      <input type="number" id="rb-tcash" min="0" max="100" step="5" value="10"></label>
+  </div>
+  <div class="grid-3" id="rb-cards"></div>
+  <div id="rb-out"></div>
+  <p class="caption">실무 팁 — <b>5%p 밴드 룰</b>: 이탈이 ±5%p 이내면 아무것도 하지 않고,
+  넘었을 때만 리밸런싱합니다 (거래비용·세금 절약 + 잦은 매매 방지). 적립식 중이라면
+  매도 대신 <b>새 납입금을 부족한 자산에 몰아주는 것</b>이 세금 면에서 유리합니다.</p>
 
   <hr>
   <h2>📐 자주 인용되는 규칙들 (치트시트)</h2>

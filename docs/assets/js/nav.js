@@ -8,11 +8,18 @@ const PAGES = [
   ["korea.html", "한국"],
   ["whales.html", "큰손"],
   ["cadence.html", "주기별"],
+  ["report.html", "월간점검"],
   ["guide.html", "가이드"],
   ["start.html", "시작"],
   ["discipline.html", "규율"],
   ["lab.html", "실험실"],
 ];
+
+function effectiveTheme() {
+  const t = document.documentElement.getAttribute("data-theme");
+  if (t === "dark" || t === "light") return t;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
 export function injectNav() {
   const current = location.pathname.split("/").pop() || "index.html";
@@ -23,8 +30,17 @@ export function injectNav() {
       ([href, label]) =>
         `<a href="${href}"${href === current ? ' class="active"' : ""}>${label}</a>`
     ).join("")}
+    <a href="#" id="vi-theme" title="라이트/다크 전환">${
+      effectiveTheme() === "dark" ? "☀️" : "🌙"}</a>
   </div>`;
   document.body.prepend(nav);
+  nav.querySelector("#vi-theme").addEventListener("click", (e) => {
+    e.preventDefault();
+    const next = effectiveTheme() === "dark" ? "light" : "dark";
+    try { localStorage.setItem("vi-theme", next); } catch { /* private mode */ }
+    document.documentElement.setAttribute("data-theme", next);
+    location.reload(); // charts pick up the new chrome on re-render
+  });
 }
 
 export function injectFooter(meta, registry) {

@@ -32,6 +32,18 @@ CHROME = {
     "grid": "#e1e0d9",
     "muted": "#898781",
     "recession_fill": "rgba(137, 135, 129, 0.15)",
+    "plot_bg": "#ffffff",
+    "ink": "#0b0b0b",
+    "axis_line": "#c3c2b7",
+}
+# Dark-theme counterpart (site.css [data-theme=dark] palette).
+CHROME_DARK = {
+    "grid": "#3b3a35",
+    "muted": "#8f8d85",
+    "recession_fill": "rgba(200, 198, 190, 0.13)",
+    "plot_bg": "#242320",
+    "ink": "#ecebe7",
+    "axis_line": "#55534c",
 }
 
 SERIES_COLORS = {
@@ -149,6 +161,7 @@ def registry_payload() -> dict:
         ],
         "series_colors": SERIES_COLORS,
         "chrome": CHROME,
+        "chrome_dark": CHROME_DARK,
         "unit_decimals": UNIT_DECIMALS,
         "time_machine_presets": registry.TIME_MACHINE_PRESETS,
         "guide_lines": {k: list(v) for k, v in registry.GUIDE_LINES.items()},
@@ -440,9 +453,11 @@ def _one_whale(slug: str, meta: dict, wdf: pd.DataFrame, status: str) -> dict | 
             changes[kind].append(nm)
     changes = {k: v[:8] for k, v in changes.items()}
 
+    latest_rows = wdf[wdf["quarter"].astype(str) == latest_q]
     return {
         "slug": slug, "name_ko": meta["name_ko"], "region": meta["region"],
         "note": meta["note"], "as_of": latest_q, "prior_quarter": prior_q,
+        "filed": str(latest_rows["filed"].max()) if "filed" in wdf else None,
         "total_value": _num(total), "holdings_count": int(len(lat)),
         "top5_weight": _num(lat.head(5)["value_usd"].sum() / total * 100 if total else None),
         "status": status, "top": top, "changes": changes,
@@ -450,10 +465,11 @@ def _one_whale(slug: str, meta: dict, wdf: pd.DataFrame, status: str) -> dict | 
 
 
 def whales_payload(edf: pd.DataFrame | None, sample_edf: pd.DataFrame | None,
-                   status: str) -> dict:
+                   status: str, history: pd.DataFrame | None = None) -> dict:
     """Per-whale 13F snapshot with quarter-over-quarter changes. Whales missing
     from the loaded frame (e.g. a kill CIK) are backfilled from the sample so
-    every configured whale always renders."""
+    every configured whale always renders. `history` (cumulative per-quarter
+    summaries) becomes each whale's size/concentration trend."""
     present = set(edf["whale"].unique()) if edf is not None and len(edf) else set()
     sample_present = (set(sample_edf["whale"].unique())
                       if sample_edf is not None and len(sample_edf) else set())
@@ -467,9 +483,95 @@ def whales_payload(edf: pd.DataFrame | None, sample_edf: pd.DataFrame | None,
             continue
         w = _one_whale(slug, meta, wdf, st)
         if w:
+            if history is not None and len(history):
+                h = (history[history["whale"] == slug]
+                     .sort_values("quarter"))
+                if len(h):
+                    w["history"] = {
+                        "quarters": [str(q) for q in h["quarter"]],
+                        "total_value": _nums(h["total_value"].values),
+                        "top5_weight": _nums(h["top5_weight"].values),
+                        "holdings_count": [int(c) for c in h["holdings_count"]],
+                    }
             whales.append(w)
     return {"whales": whales,
             "generated_quarter": whales[0]["as_of"] if whales else None}
+
+
+REPORT_MACRO_KEYS = ["fedfunds", "cpi_yoy", "unrate", "vix", "hy_spread"]
+
+
+def report_payload(panel: pd.DataFrame, overview: dict, context: dict,
+                   whales_doc: dict) -> dict:
+    """The monthly check-in digest: what changed over the last month.
+
+    Everything is derived from the already-built series (no stored state):
+    each indicator's sigma rating now vs one month ago, the composite's move,
+    a month-over-month macro snapshot, and 13F filings from the last 45 days.
+    """
+    now_idx = panel.dropna(how="all").index[-1]
+    prev_idx = now_idx - pd.DateOffset(months=1)
+
+    ratings, any_change = [], False
+    for key in registry.VALUATION_KEYS:
+        if key not in panel:
+            continue
+        s = panel[key].dropna()
+        if s.empty:
+            continue
+        summ = stats.summary(s)
+        sign = 1 if registry.INDICATORS[key].higher_is_expensive else -1
+        z_now = sign * summ.z
+        v_prev = s.asof(prev_idx)
+        z_prev = (sign * (v_prev - summ.mean) / summ.std
+                  if pd.notna(v_prev) and summ.std else None)
+        r_now = stats.rating(z_now).key
+        r_prev = stats.rating(z_prev).key if z_prev is not None else r_now
+        changed = r_now != r_prev
+        any_change = any_change or changed
+        ratings.append({
+            "key": key, "rating_now": r_now, "rating_prev": r_prev,
+            "changed": changed, "value_now": _num(summ.current),
+            "z_now": _num(z_now), "z_prev": _num(z_prev),
+        })
+
+    pca = overview["pca"]
+    prev_str = prev_idx.strftime("%Y-%m-%d")
+    prev_pos = max((i for i, d in enumerate(pca["dates"]) if d <= prev_str),
+                   default=None)
+    comp_prev = pca["values"][prev_pos] if prev_pos is not None else None
+    composite = {
+        "now": pca["current"], "prev": _num(comp_prev),
+        "rating_now": pca["rating"],
+        "rating_prev": (stats.rating(comp_prev).key
+                        if comp_prev is not None else pca["rating"]),
+    }
+
+    macro = []
+    for key in REPORT_MACRO_KEYS:
+        s = context.get(key)
+        if s is None or s.dropna().empty:
+            continue
+        s = s.dropna()
+        v_prev = s.asof(s.index[-1] - pd.DateOffset(months=1))
+        macro.append({"key": key, "now": _num(s.iloc[-1]), "prev": _num(v_prev)})
+
+    cutoff = (datetime.now(timezone.utc) - pd.Timedelta(days=45)).strftime("%Y-%m-%d")
+    filings = [
+        {"name_ko": w["name_ko"], "as_of": w["as_of"], "filed": w.get("filed")}
+        for w in whales_doc.get("whales", [])
+        if w.get("filed") and w["filed"] >= cutoff
+    ]
+
+    return {
+        "month_now": now_idx.strftime("%Y-%m"),
+        "month_prev": prev_idx.strftime("%Y-%m"),
+        "ratings": ratings,
+        "any_rating_change": any_change,
+        "composite": composite,
+        "macro": macro,
+        "whale_filings": filings,
+    }
 
 
 def content_payload() -> dict:
@@ -506,11 +608,13 @@ def build_site(out_dir: Path, force: bool = False) -> dict[str, str]:
     extras = build_extras(frames)
     tri, usrec = extras["real_tri"], extras["usrec"]
 
+    overview = overview_payload(panel, tri, usrec)
+
     _write(out_dir, "meta.json", meta_payload(statuses, panel))
     _write(out_dir, "registry.json", registry_payload())
     _write(out_dir, "panel.json", panel_payload(panel, tri))
     _write(out_dir, "context.json", context_payload(extras["context"]))
-    _write(out_dir, "overview.json", overview_payload(panel, tri, usrec))
+    _write(out_dir, "overview.json", overview)
     _write(out_dir, "guide.json", guide_payload(panel, tri))
     _write(out_dir, "spx_daily.json", spx_payload(extras["spx_daily"]))
     try:
@@ -519,11 +623,16 @@ def build_site(out_dir: Path, force: bool = False) -> dict[str, str]:
         _write(out_dir, "korea.json", {"kospi": {"dates": [], "values": []},
                                        "indicators": {}, "unavailable": True})
     try:
-        _write(out_dir, "whales.json", whales_payload(
+        hist_path = config.SAMPLE_DATA_DIR / "edgar_whale_history.csv"
+        history = pd.read_csv(hist_path) if hist_path.exists() else None
+        whales_doc = whales_payload(
             frames.get("edgar_whales"), loader._load_sample("edgar_whales"),
-            statuses.get("edgar_whales", "sample")))
+            statuses.get("edgar_whales", "sample"), history=history)
     except Exception:  # noqa: BLE001 - whale tracker is optional; page degrades
-        _write(out_dir, "whales.json", {"whales": [], "unavailable": True})
+        whales_doc = {"whales": [], "unavailable": True}
+    _write(out_dir, "whales.json", whales_doc)
+    _write(out_dir, "report.json",
+           report_payload(panel, overview, extras["context"], whales_doc))
     _write(out_dir, "content.json", content_payload())
     panel.to_csv(out_dir / "valueindex_panel.csv")
     return statuses

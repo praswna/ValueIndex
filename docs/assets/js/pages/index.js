@@ -188,7 +188,7 @@ function renderGauge(view) {
   }], baseLayout(registry, {
     hovermode: "closest", showlegend: false,
     xaxis: { range: [0, 108], title: { text: "고평가 백분위 (0 = 역사상 최저, 100 = 최고)" },
-             showgrid: false, linecolor: "#c3c2b7" },
+             showgrid: false, linecolor: registry.chrome.axis_line },
     yaxis: { gridcolor: "rgba(0,0,0,0)", automargin: true },
     margin: { l: 10, r: 10, t: 10, b: 40 },
   }, 380));
@@ -246,7 +246,7 @@ function renderAnalogs(view) {
     }));
   render($("analog-chart"), traces, baseLayout(registry, {
     shapes: [hline(100, registry.chrome.muted)],
-    xaxis: { title: { text: "닮은 시점 이후 경과 (개월)" }, showgrid: false, linecolor: "#c3c2b7" },
+    xaxis: { title: { text: "닮은 시점 이후 경과 (개월)" }, showgrid: false, linecolor: registry.chrome.axis_line },
     yaxis: { title: { text: "실질 총수익 지수 (시작=100)" }, gridcolor: registry.chrome.grid },
   }, 380));
 }

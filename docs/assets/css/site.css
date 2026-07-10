@@ -1,4 +1,6 @@
-/* ValueIndex static site — light theme, Korean system font stack. */
+/* ValueIndex static site — light/dark themes, Korean system font stack.
+   Theme: system preference by default; the nav toggle sets
+   <html data-theme="light|dark"> (persisted in localStorage). */
 :root {
   --surface: #ffffff;
   --page: #f9f9f7;
@@ -8,7 +10,41 @@
   --grid: #e1e0d9;
   --border: rgba(11, 11, 11, 0.10);
   --accent: #2a78d6;
+  --box-info-bg: #eef4fc;  --box-info-bd: #cde2fb;
+  --box-warn-bg: #fdf6e3;  --box-warn-bd: #f5e4b0;
+  --box-good-bg: #edf7ed;  --box-good-bd: #cfe8cf;
+  --box-bad-bg: #fdeeee;   --box-bad-bd: #f6cfcf;
   --font: system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+}
+[data-theme="dark"] {
+  --surface: #242320;
+  --page: #171614;
+  --ink: #ecebe7;
+  --ink-2: #b8b6ae;
+  --muted: #8f8d85;
+  --grid: #3b3a35;
+  --border: rgba(255, 255, 255, 0.13);
+  --accent: #5b9ae0;
+  --box-info-bg: #1d2735;  --box-info-bd: #2c405c;
+  --box-warn-bg: #302a17;  --box-warn-bd: #55471f;
+  --box-good-bg: #1e2b1e;  --box-good-bd: #2f4a2f;
+  --box-bad-bg: #331e1e;   --box-bad-bd: #543030;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface: #242320;
+    --page: #171614;
+    --ink: #ecebe7;
+    --ink-2: #b8b6ae;
+    --muted: #8f8d85;
+    --grid: #3b3a35;
+    --border: rgba(255, 255, 255, 0.13);
+    --accent: #5b9ae0;
+    --box-info-bg: #1d2735;  --box-info-bd: #2c405c;
+    --box-warn-bg: #302a17;  --box-warn-bd: #55471f;
+    --box-good-bg: #1e2b1e;  --box-good-bd: #2f4a2f;
+    --box-bad-bg: #331e1e;   --box-bad-bd: #543030;
+  }
 }
 * { box-sizing: border-box; }
 html { font-family: var(--font); color: var(--ink); background: var(--page); }
@@ -65,10 +101,11 @@ h3 { font-size: 1.05rem; margin: 22px 0 4px; }
 /* info boxes */
 .box { border-radius: 10px; padding: 12px 16px; margin: 12px 0;
   font-size: 0.93rem; border: 1px solid transparent; }
-.box-info { background: #eef4fc; border-color: #cde2fb; }
-.box-warn { background: #fdf6e3; border-color: #f5e4b0; }
-.box-good { background: #edf7ed; border-color: #cfe8cf; }
-.box-bad { background: #fdeeee; border-color: #f6cfcf; }
+.box-info { background: var(--box-info-bg); border-color: var(--box-info-bd); }
+.box-warn { background: var(--box-warn-bg); border-color: var(--box-warn-bd); }
+.box-good { background: var(--box-good-bg); border-color: var(--box-good-bd); }
+.box-bad { background: var(--box-bad-bg); border-color: var(--box-bad-bd); }
+a { color: var(--accent); }
 
 /* tables */
 .tbl-wrap { overflow-x: auto; }

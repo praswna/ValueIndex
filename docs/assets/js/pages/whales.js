@@ -77,6 +77,11 @@ if (whales.unavailable || !whales.whales || !whales.whales.length) {
           </div>
           <div class="whale-changes">${changesBlock(w)}</div>
         </div>
+        ${w.history && w.history.quarters.length >= 2
+          ? `<h3 class="wh-title">미국주식 운용규모 추이</h3>
+             <div id="wh-${w.slug}" class="chart"></div>
+             <div class="caption">분기가 쌓일수록 길어지는 기록입니다 (13F 공시 기준, 미국 상장주식만).</div>`
+          : ""}
       </section>`;
     })
     .join("");
@@ -111,5 +116,27 @@ if (whales.unavailable || !whales.whales || !whales.whales.length) {
         yaxis: { automargin: true },
       }, height)
     );
+
+    if (w.history && w.history.quarters.length >= 2) {
+      const h = w.history;
+      const hover = h.quarters.map(
+        (q, i) =>
+          `${q}<br>총 ${usd(h.total_value[i])} · ${h.holdings_count[i]}종목` +
+          (h.top5_weight[i] !== null ? `<br>상위5 집중도 ${pct(h.top5_weight[i])}` : "")
+      );
+      render(
+        document.getElementById(`wh-${w.slug}`),
+        [{
+          type: "bar", x: h.quarters, y: h.total_value.map((v) => v / 1e9),
+          marker: { color: "#2a78d6" }, hovertext: hover, hoverinfo: "text",
+        }],
+        baseLayout(registry, {
+          hovermode: "closest", showlegend: false,
+          margin: { l: 55, r: 14, t: 8, b: 34 },
+          xaxis: { type: "category" },
+          yaxis: { title: { text: "$B" }, gridcolor: registry.chrome.grid },
+        }, 190)
+      );
+    }
   }
 }

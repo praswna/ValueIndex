@@ -147,6 +147,45 @@ def _fetch_whale(slug: str, cik: str) -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)[COLUMNS]
 
 
+def summarize_quarters(df: pd.DataFrame) -> pd.DataFrame:
+    """Per-(whale, quarter) summary rows for the history file: total value,
+    distinct holdings, top-5 concentration."""
+    rows = []
+    for (whale, quarter), qdf in df.groupby(["whale", "quarter"]):
+        agg = (qdf.fillna({"put_call": "", "cusip": ""})
+               .groupby(["cusip", "put_call"])["value_usd"].sum()
+               .sort_values(ascending=False))
+        total = float(agg.sum())
+        rows.append({
+            "whale": whale, "quarter": str(quarter),
+            "filed": str(qdf["filed"].max()),
+            "total_value": total,
+            "holdings_count": int(len(agg)),
+            "top5_weight": round(float(agg.head(5).sum()) / total * 100, 2)
+                           if total else None,
+        })
+    return pd.DataFrame(rows)
+
+
+def update_history(df: pd.DataFrame, path=None) -> pd.DataFrame:
+    """Fold this snapshot's quarter summaries into the cumulative history CSV.
+
+    13F snapshots only carry the latest two quarters, so this file is how the
+    tracker accumulates a long-run record (fund size / concentration trends).
+    New rows win over existing ones for the same (whale, quarter)."""
+    path = path or (config.SAMPLE_DATA_DIR / "edgar_whale_history.csv")
+    new = summarize_quarters(df)
+    if path.exists():
+        old = pd.read_csv(path)
+        merged = pd.concat([old, new], ignore_index=True)
+        merged = merged.drop_duplicates(subset=["whale", "quarter"], keep="last")
+    else:
+        merged = new
+    merged = merged.sort_values(["whale", "quarter"]).reset_index(drop=True)
+    merged.to_csv(path, index=False)
+    return merged
+
+
 def _last_known(slug: str) -> pd.DataFrame | None:
     """A whale's rows from the existing bundled file (last live snapshot or,
     failing that, the example) so a failed fetch keeps its data instead of

@@ -6,11 +6,13 @@ on:
     - cron: "0 22 * * *"
   workflow_dispatch: {}
 
-# pages/id-token needed for the GitHub Pages deployment.
+# pages/id-token needed for the GitHub Pages deployment; issues for the
+# rating-change alert.
 permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 # Avoid overlapping deploys.
 concurrency:
@@ -33,6 +35,9 @@ jobs:
       - name: Install package
         run: pip install -e ".[site]"
 
+      - name: Snapshot yesterday's ratings
+        run: cp docs/data/overview.json /tmp/overview_prev.json || true
+
       - name: Fetch live data into the bundled snapshot
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -40,6 +45,19 @@ jobs:
 
       - name: Build static site data (docs/data)
         run: python scripts/build_site_data.py
+
+      - name: Open an issue if a rating band changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/check_rating_changes.py /tmp/overview_prev.json docs/data/overview.json > /tmp/rating_changes.md
+          if [ -s /tmp/rating_changes.md ]; then
+            gh issue create \
+              --title "🔔 밸류에이션 등급 변화 ($(date +%Y-%m-%d))" \
+              --body-file /tmp/rating_changes.md
+          else
+            echo "No rating changes."
+          fi
 
       - name: Commit refreshed snapshot + site data
         run: |

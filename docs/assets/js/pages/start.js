@@ -56,7 +56,7 @@ function drawBogle() {
   }], baseLayout(registry, {
     hovermode: "closest", showlegend: false,
     yaxis: { title: { text: "%/년 (실질)" }, gridcolor: registry.chrome.grid,
-             zerolinecolor: "#c3c2b7" },
+             zerolinecolor: registry.chrome.axis_line },
   }, 340));
 
   $("bogle-note").textContent =
@@ -114,7 +114,7 @@ function drawMc() {
       line: { color: registry.chrome.muted, width: 1.5, dash: "dash" },
       hovertemplate: "%{x:.0f}년차 원금: %{y:,.0f}만원<extra></extra>" },
   ], baseLayout(registry, {
-    xaxis: { title: { text: "경과 (년)" }, showgrid: false, linecolor: "#c3c2b7" },
+    xaxis: { title: { text: "경과 (년)" }, showgrid: false, linecolor: registry.chrome.axis_line },
     yaxis: { title: { text: "자산 (만원, 실질)" }, gridcolor: registry.chrome.grid },
   }, 420));
 
@@ -142,6 +142,59 @@ $("growth").addEventListener("input", drawMc);
 capef.addEventListener("input", drawMc);
 $("contrib").addEventListener("change", drawMc);
 $("years").addEventListener("input", drawMc);
+
+// ------------------------------------------------------- rebalancing helper
+const RB_KEY = "vi-rebalance";
+const RB_IDS = ["rb-stock", "rb-bond", "rb-cash", "rb-tstock", "rb-tbond", "rb-tcash"];
+const ASSETS = [
+  ["주식", "rb-stock", "rb-tstock"],
+  ["채권", "rb-bond", "rb-tbond"],
+  ["현금", "rb-cash", "rb-tcash"],
+];
+
+try {
+  const saved = JSON.parse(localStorage.getItem(RB_KEY) || "{}");
+  for (const id of RB_IDS) if (saved[id] !== undefined) $(id).value = saved[id];
+} catch { /* corrupted storage -> defaults */ }
+
+function drawRebalance() {
+  const vals = Object.fromEntries(RB_IDS.map((id) => [id, Number($(id).value) || 0]));
+  localStorage.setItem(RB_KEY, JSON.stringify(vals));
+  const total = vals["rb-stock"] + vals["rb-bond"] + vals["rb-cash"];
+  const tsum = vals["rb-tstock"] + vals["rb-tbond"] + vals["rb-tcash"];
+  if (!total || tsum !== 100) {
+    $("rb-cards").innerHTML = "";
+    $("rb-out").innerHTML = `<div class="box box-warn">${
+      !total ? "보유액을 입력하세요." : `목표 비중의 합이 ${tsum}%입니다 — 100%가 되게 맞춰주세요.`
+    }</div>`;
+    return;
+  }
+  const rows = ASSETS.map(([name, vid, tid]) => {
+    const cur = (vals[vid] / total) * 100;
+    const target = vals[tid];
+    const drift = cur - target;
+    const move = Math.round((target / 100) * total - vals[vid]);
+    return { name, cur, target, drift, move };
+  });
+  $("rb-cards").innerHTML = rows.map((r) => `
+    <div class="card"><div class="metric-label">${r.name}</div>
+      <div class="metric-value" style="font-size:1.3rem">${r.cur.toFixed(1)}%</div>
+      <div class="metric-note">목표 ${r.target}% · 이탈 ${fmtSigned(r.drift, 1)}%p
+        ${Math.abs(r.drift) > 5 ? "🔔" : ""}</div></div>`).join("");
+  const maxDrift = Math.max(...rows.map((r) => Math.abs(r.drift)));
+  if (maxDrift <= 5) {
+    $("rb-out").innerHTML = `<div class="box box-good">✅ 모든 자산이 목표 ±5%p
+      이내입니다 — <b>지금은 아무것도 하지 않는 것이 정답</b>입니다.</div>`;
+  } else {
+    const moves = rows.filter((r) => Math.abs(r.move) >= 1).map((r) =>
+      `<li><b>${r.name}</b>: ${r.move > 0 ? "매수" : "매도"}
+       ${Math.abs(r.move).toLocaleString("ko-KR")}만원</li>`);
+    $("rb-out").innerHTML = `<div class="box box-info"><b>±5%p 밴드를 벗어났습니다.
+      목표로 되돌리려면:</b><ul style="margin:6px 0 0 18px">${moves.join("")}</ul></div>`;
+  }
+}
+for (const id of RB_IDS) $(id).addEventListener("input", drawRebalance);
+drawRebalance();
 
 // 72 rule widget
 function draw72() {

@@ -50,7 +50,7 @@ render($("fan-chart"), [
   annotations: [{ x: cur, y: 1, yref: "paper", yanchor: "bottom",
     text: `현재 CAPE ${cur.toFixed(1)}`, showarrow: false,
     font: { color: "#c22f2f" } }],
-  xaxis: { title: { text: "그 시점의 CAPE" }, showgrid: false, linecolor: "#c3c2b7" },
+  xaxis: { title: { text: "그 시점의 CAPE" }, showgrid: false, linecolor: registry.chrome.axis_line },
   yaxis: { title: { text: "이후 10년 실질 총수익률 (연환산 %)" },
            gridcolor: registry.chrome.grid },
 }, 460));

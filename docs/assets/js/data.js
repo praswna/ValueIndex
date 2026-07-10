@@ -1,6 +1,8 @@
 // Data loading + formatting. meta.json is fetched no-store first; every
 // other file gets ?v=<generated_at> so daily updates bust the Pages cache.
 
+import { isDark } from "./charts.js";
+
 let _meta = null;
 
 export async function loadMeta() {
@@ -22,6 +24,11 @@ export async function load(...names) {
       out[name] = await resp.json();
     })
   );
+  // In dark mode, swap the chart chrome so every registry.chrome.* lookup
+  // (grid, axis_line, plot_bg, …) is theme-correct without touching pages.
+  if (out.registry && out.registry.chrome_dark && isDark()) {
+    out.registry.chrome = out.registry.chrome_dark;
+  }
   return out;
 }
 

@@ -49,6 +49,11 @@ def save_snapshot(name: str, df: pd.DataFrame, meta: dict | None = None) -> dict
     """Write one source's CSV and stamp its refresh time in _meta.json."""
     config.SAMPLE_DATA_DIR.mkdir(parents=True, exist_ok=True)
     df.to_csv(config.SAMPLE_DATA_DIR / f"{name}.csv", index=False)
+    if name == "edgar_whales":
+        # 13F snapshots only keep the latest two quarters; fold their
+        # summaries into the cumulative history so trends accumulate.
+        from .fetchers import edgar
+        edgar.update_history(df)
     meta = load_meta() if meta is None else meta
     meta[name] = datetime.now(timezone.utc).isoformat()
     return meta
