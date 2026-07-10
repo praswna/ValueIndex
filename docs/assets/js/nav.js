@@ -1,6 +1,7 @@
 // Shared header nav + footer, injected on every page.
 
 const PAGES = [
+  ["summary.html", "요약"],
   ["index.html", "개요"],
   ["compare.html", "비교"],
   ["detail.html", "상세"],

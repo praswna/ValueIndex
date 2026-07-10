@@ -144,6 +144,41 @@ details.vi[open] summary { margin-bottom: 8px; }
 
 .chart { width: 100%; margin: 8px 0 4px; touch-action: pan-y; }
 
+/* summary tiles + detail popup */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px; }
+.tile { display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 8px; cursor: pointer; font: inherit; color: var(--ink);
+  text-align: center; position: relative; }
+.tile:hover { border-color: var(--accent); }
+.tile-wide { width: 100%; margin: 4px 0 8px; padding: 16px 8px; }
+.tile-dot { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px;
+  border-radius: 50%; }
+.tile-label { font-size: 0.78rem; color: var(--ink-2); }
+.tile-value { font-size: 1.35rem; font-weight: 650; line-height: 1.2; }
+.tile-sub { font-size: 0.72rem; color: var(--muted); }
+
+.modal-overlay { position: fixed; inset: 0; z-index: 50;
+  background: rgba(0, 0, 0, 0.45); display: flex; align-items: center;
+  justify-content: center; padding: 18px; }
+.modal-overlay[hidden] { display: none; }
+.modal { background: var(--page); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px; max-width: 520px; width: 100%;
+  max-height: 86vh; overflow-y: auto; position: relative; }
+.modal-close { position: absolute; top: 10px; right: 12px; border: 0;
+  background: none; font-size: 1.05rem; cursor: pointer; color: var(--muted);
+  padding: 4px; }
+.modal-close:hover { color: var(--ink); }
+.modal-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  font-size: 0.78rem; color: var(--ink-2); text-align: center; margin: 8px 0; }
+.modal-stats b { font-size: 0.95rem; color: var(--ink); }
+.modal-desc { font-size: 0.92rem; margin: 10px 0 4px; }
+@media (max-width: 480px) {
+  .tiles { grid-template-columns: repeat(2, 1fr); }
+  .modal-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* whale tracker */
 .whale-card { background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 14px 18px; margin: 18px 0; }
