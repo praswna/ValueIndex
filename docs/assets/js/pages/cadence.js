@@ -5,6 +5,7 @@ import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render, lineTrace, ratingBadge } from "../charts.js";
 import { cleanPairs, drawdown, percentileRanks, asofIndex, shiftDateStr } from "../stats.js";
 import { openModal } from "../modal.js";
+import { CTX_SOURCE, isApprox, approxBadge } from "../ctxpop.js";
 
 injectNav();
 const { meta, registry, panel, context, overview, korea } =
@@ -69,13 +70,15 @@ const ALL = {};
 function tilesHtml(items) {
   return items.map((it) => {
     ALL[it.id] = it;
+    const approx = isApprox(meta, CTX_SOURCE[it.id]);
     return `<button class="tile" data-id="${it.id}">
       <span class="tile-label">${it.label}</span>
       <span class="tile-value">${
         typeof it.value === "number" && it.unit !== ""
           ? fmt(it.value, it.unit, registry)
           : Number(it.value).toLocaleString("ko-KR")}</span>
-      <span class="tile-sub">${it.unit || ""}${it.unit ? " · " : ""}${it.cadence}</span>
+      <span class="tile-sub">${it.unit || ""}${it.unit ? " · " : ""}${it.cadence}${
+        approx ? " · ⚠️ 근사" : ""}</span>
     </button>`;
   }).join("");
 }
@@ -92,9 +95,10 @@ function show(id) {
   const pct = percentileRanks(vals)[vals.length - 1];
   const fmtV = (v) => (it.unit !== "" ? fmt(v, it.unit, registry)
                                       : Math.round(v).toLocaleString("ko-KR"));
+  const approx = isApprox(meta, CTX_SOURCE[id]);
   openModal(`
     <h2 style="margin:0 0 2px">${it.label}
-      ${it.rating ? ratingBadge(registry, it.rating) : ""}</h2>
+      ${it.rating ? ratingBadge(registry, it.rating) : ""}${approx ? approxBadge() : ""}</h2>
     <div class="metric-value">${
       typeof it.value === "number" && it.unit !== ""
         ? fmt(it.value, it.unit, registry)
@@ -107,7 +111,7 @@ function show(id) {
     </div>
     <div id="m-chart" class="chart"></div>
     <p class="modal-desc">${it.note}</p>
-    ${it.rating ? `<p><a href="detail.html#${it.id}">🔍 상세 팝업에서 ±σ 밴드·분포 보기</a></p>` : ""}
+    ${it.rating ? `<p><a href="summary.html#${it.id}">🔍 딥다이브 팝업 보기 (±σ 밴드·분포)</a></p>` : ""}
     <p class="caption">갱신 주기: <b>${it.cadence}</b> — 이 주기보다 자주 보는 것은
       새 정보가 아니라 소음입니다.</p>`);
   render(document.getElementById("m-chart"),

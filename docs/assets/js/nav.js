@@ -3,8 +3,6 @@
 const PAGES = [
   ["summary.html", "요약"],
   ["index.html", "개요"],
-  ["compare.html", "비교"],
-  ["detail.html", "상세"],
   ["thermometer.html", "온도계"],
   ["korea.html", "한국"],
   ["whales.html", "큰손"],

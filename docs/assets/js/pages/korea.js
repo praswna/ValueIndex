@@ -39,6 +39,11 @@ if (korea.unavailable || !korea.kospi.dates.length) {
 
 const COLORS = { per: "#008300", pbr: "#4a3aa7", div_yield: "#e34948" };
 
+// KRX is blocked from the auto-refresh IPs; when its status isn't real data,
+// the PER/PBR/dividend tiles carry an approximation badge.
+const krxStatus = meta.sources && meta.sources.krx_valuation;
+const krxApprox = krxStatus !== "live" && krxStatus !== "snapshot" && krxStatus !== "cached";
+
 // ---- tiles: KOSPI, valuation trio (rating dot + ⚠️), macro pair ----
 const tiles = [];
 if (korea.kospi.dates.length) {
@@ -53,7 +58,8 @@ for (const [key, v] of Object.entries(korea.indicators)) {
     <span class="tile-dot" style="background:${ratingColor(v.rating)}"></span>
     <span class="tile-label">${v.label_ko}</span>
     <span class="tile-value">${fmt(v.current, v.unit, registry)}</span>
-    <span class="tile-sub">${v.unit} · ${v.start_year}년~ ⚠️</span>
+    <span class="tile-sub">${v.unit} · ${v.start_year}년~ ⚠️${
+      krxApprox ? " 근사" : ""}</span>
   </button>`);
 }
 const MACRO = [];
@@ -119,6 +125,9 @@ function showVal(key) {
     </div>
     <div id="m-chart" class="chart"></div>
     <p class="modal-desc">${EXPLAIN[key] || ""}</p>
+    ${krxApprox ? `<div class="box box-warn note-sm">⚠️ KRX 소스가 자동 갱신 IP에서
+      차단되어 현재 <b>근사 샘플</b>이 표시되고 있습니다 — 수치·등급을 판단에 쓰지
+      마세요. 집 PC에서 로컬 수집기를 돌리면 실데이터로 교체됩니다.</div>` : ""}
     ${short ? `<p class="caption">⚠️ 히스토리가 ${2026 - v.start_year}년으로 짧아
       등급의 신뢰도는 미국 지표(150년)보다 낮습니다.</p>` : ""}
     ${key === "per" ? `<h3>미국과 나란히 보기</h3>

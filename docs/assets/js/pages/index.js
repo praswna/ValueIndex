@@ -8,6 +8,7 @@ import {
 } from "../charts.js";
 import { asofIndex, cleanPairs, summary } from "../stats.js";
 import { alignedZFromPanel, pcaComposite, nearestAnalogs, monthsBetween } from "../quant.js";
+import { initCompare } from "../compare-section.js";
 
 injectNav();
 const { meta, registry, panel, overview } = await load("registry", "panel", "overview");
@@ -292,3 +293,13 @@ yearInput.addEventListener("input", () => {
 $("tm-year-label").textContent = yearInput.value;
 
 renderAll(currentView());
+
+// ------------------------------------------- compare section (lazy on open)
+const cmpDetails = $("compare-details");
+let cmpReady = false;
+cmpDetails.addEventListener("toggle", () => {
+  if (cmpDetails.open && !cmpReady) {
+    cmpReady = true;
+    initCompare({ registry, panel, overview });
+  }
+});

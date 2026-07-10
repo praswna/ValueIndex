@@ -73,6 +73,29 @@
   <p class="caption">표본이 몇 개뿐이라 통계적 결론은 불가능합니다 — 경로들이 서로 크게
     다르다는 것 자체가 교훈입니다(비슷한 밸류에이션에서도 미래는 갈라집니다).</p>
 
+  <details class="vi" id="compare-details">
+    <summary>📈 지표 겹쳐 보기 (비교 차트 · 상관관계)</summary>
+    <p class="caption">비교할 지표를 고르세요 (최대 4개 — 많을수록 읽기 어려워집니다)</p>
+    <div class="check-row" id="picker"></div>
+    <div class="controls">
+      <div class="control">표시 방식
+        <span class="check-row" id="norm-btns"></span>
+      </div>
+      <label class="control">시작 연도: <b id="from-label"></b>
+        <input type="range" id="from-year" step="1">
+      </label>
+      <label class="control"><span><input type="checkbox" id="rec" checked> 경기침체 음영</span></label>
+    </div>
+    <div id="chart" class="chart"></div>
+    <p class="caption" id="norm-note"></p>
+
+    <h3>지표 상관관계</h3>
+    <p class="caption">방향을 정렬한(높을수록 고평가) 백분위끼리의 상관계수입니다.
+      밸류에이션 지표들은 서로 상관이 높습니다 — <b>지표를 늘려도 정보가 비례해 늘지 않는
+      이유</b>이자, 여러 지표가 같은 방향을 가리킬 때 신뢰가 커지는 이유입니다.</p>
+    <div id="heatmap" class="chart"></div>
+  </details>
+
   <p><a href="data/valueindex_panel.csv" download>💾 전체 지표 데이터 다운로드 (CSV)</a></p>
 </main>
 <script type="module" src="assets/js/pages/index.js"></script>

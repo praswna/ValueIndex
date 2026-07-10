@@ -96,6 +96,13 @@ document.querySelector("main").addEventListener("click", (e) => {
   if (tile.dataset.kind === "val") {
     showValuationPopup(registry, overview, tile.dataset.key, getPanel);
   } else if (tile.dataset.kind === "ctx") {
-    showContextPopup(registry, overview, context, tile.dataset.key);
+    showContextPopup(registry, overview, context, tile.dataset.key, meta);
   } else if (tile.dataset.kind === "pca") showPca();
 });
+
+// deep link: summary.html#cape opens that indicator's deep-dive right away
+// (also the landing spot for links from the old detail page).
+const hashKey = decodeURIComponent(location.hash.slice(1));
+if (registry.valuation_keys.includes(hashKey)) {
+  showValuationPopup(registry, overview, hashKey, getPanel);
+}

@@ -3,7 +3,7 @@
 import { load, fmt, fmtSigned } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { asofIndex, shiftDateStr } from "../stats.js";
-import { showContextPopup } from "../ctxpop.js";
+import { showContextPopup, CTX_SOURCE, isApprox } from "../ctxpop.js";
 
 injectNav();
 const { meta, registry, context, overview } = await load("registry", "context", "overview");
@@ -35,11 +35,13 @@ for (const [group, title, desc] of SECTIONS) {
   const tiles = keys.map((key) => {
     const m = registry.indicators[key];
     const { last, delta } = lastDelta(key);
+    const approx = isApprox(meta, CTX_SOURCE[key]);
     return `<button class="tile" data-key="${key}">
       <span class="tile-label">${m.label_ko}</span>
       <span class="tile-value">${fmt(last, m.unit, registry)}</span>
       <span class="tile-sub">${m.unit || ""}${
-        delta !== null ? ` · 1년 ${fmtSigned(delta, 1)}` : ""}</span>
+        delta !== null ? ` · 1년 ${fmtSigned(delta, 1)}` : ""}${
+        approx ? " · ⚠️ 근사" : ""}</span>
     </button>`;
   }).join("");
   root.insertAdjacentHTML("beforeend", `
@@ -50,5 +52,5 @@ for (const [group, title, desc] of SECTIONS) {
 
 root.addEventListener("click", (e) => {
   const tile = e.target.closest(".tile");
-  if (tile) showContextPopup(registry, overview, context, tile.dataset.key);
+  if (tile) showContextPopup(registry, overview, context, tile.dataset.key, meta);
 });

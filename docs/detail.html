@@ -2,19 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <script>try{var t=localStorage.getItem("vi-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ValueIndex — 지표 상세</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
-  <link rel="stylesheet" href="assets/css/site.css">
-  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+  <title>ValueIndex — 이동 중…</title>
+  <script>location.replace("summary.html" + location.hash);</script>
+  <meta http-equiv="refresh" content="0; url=summary.html">
 </head>
-<body>
-<main>
-  <h1>🔍 지표 상세</h1>
-  <p class="caption">지표를 누르면 전체 히스토리(±σ 밴드)·분포·설명이 뜹니다.</p>
-  <div class="tiles" id="tiles"></div>
-</main>
-<script type="module" src="assets/js/pages/detail.js"></script>
-</body>
+<body><a href="summary.html">요약 페이지로 이동</a></body>
 </html>

@@ -7,7 +7,23 @@ import { baseLayout, render, lineTrace, recessionShapes, hline } from "./charts.
 import { asofIndex, shiftDateStr, percentileRanks } from "./stats.js";
 import { openModal } from "./modal.js";
 
-export function showContextPopup(registry, overview, context, key) {
+// context key -> loader source name, for the sources that datacenter IPs
+// block (these fall back to approximated sample data on the deployed site).
+export const CTX_SOURCE = {
+  aaii_spread: "aaii_sentiment",
+  margin_debt: "finra_margin_debt",
+};
+
+export function isApprox(meta, sourceName) {
+  const st = meta && meta.sources && meta.sources[sourceName];
+  return st !== undefined && st !== "live" && st !== "snapshot" && st !== "cached";
+}
+
+export function approxBadge() {
+  return '<span class="badge" style="background:#898781">⚠️ 근사</span>';
+}
+
+export function showContextPopup(registry, overview, context, key, meta = null) {
   const m = registry.indicators[key] || {};
   const s = context[key];
   const values = s.values, dates = s.dates;
@@ -19,9 +35,13 @@ export function showContextPopup(registry, overview, context, key) {
   const hi = Math.max(...values.filter((v) => v !== null));
   const guides = registry.guide_lines[key] || [];
 
+  const approx = isApprox(meta, CTX_SOURCE[key]);
   openModal(`
-    <h2 style="margin:0 0 2px">${m.label_ko || key}</h2>
+    <h2 style="margin:0 0 2px">${m.label_ko || key} ${approx ? approxBadge() : ""}</h2>
     <div class="metric-value">${fmt(last, m.unit, registry)} ${m.unit || ""}</div>
+    ${approx ? `<div class="box box-warn note-sm">이 소스는 자동 갱신 IP가 차단되어
+      현재 <b>근사 샘플</b>이 표시되고 있습니다. 집 PC에서 로컬 수집기를 돌리면
+      실데이터로 교체됩니다.</div>` : ""}
     <div class="modal-stats">
       <div>1년 변화<br><b>${delta === null ? "-" : fmtSigned(delta, 1)}</b></div>
       <div>역사 백분위<br><b>${pct.toFixed(0)}/100</b></div>
