@@ -12,11 +12,15 @@
 <body>
 <main>
   <h1>🌡️ 시장 온도계</h1>
-  <div class="box box-info"><b>왜 이 지표들은 고평가/저평가 등급이 없나요?</b><br>
+  <p class="caption">등급 없는 참고 지표들입니다. 누르면 차트와 해석이 뜹니다.</p>
+  <div id="sections"></div>
+
+  <details class="vi">
+    <summary>왜 이 지표들은 고평가/저평가 등급이 없나요?</summary>
     금·유가는 이익도 배당도 만들지 않아 '적정 가격'의 기준점이 없고, VIX·금리차·신용스프레드는
     밸류에이션이 아니라 <b>심리·경기의 신호</b>입니다. 등급을 매기면 오히려 잘못된 해석을
-    유도하므로, 여기서는 수치와 맥락만 보여줍니다.</div>
-  <div id="sections"></div>
+    유도하므로, 여기서는 수치와 맥락만 보여줍니다.
+  </details>
 </main>
 <script type="module" src="assets/js/pages/thermometer.js"></script>
 </body>

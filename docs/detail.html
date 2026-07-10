@@ -12,19 +12,8 @@
 <body>
 <main>
   <h1>🔍 지표 상세</h1>
-  <div class="controls">
-    <label class="control">지표 선택 <select id="picker"></select></label>
-  </div>
-  <h2 style="margin-top:10px"><span id="title"></span> <span id="badge"></span></h2>
-  <p class="caption" id="subtitle"></p>
-  <div class="grid-5" id="metrics"></div>
-  <div id="history" class="chart"></div>
-  <h2>역사적 분포에서 현재 위치</h2>
-  <div id="hist" class="chart"></div>
-  <details class="vi" open>
-    <summary>📖 이 지표 쉽게 이해하기</summary>
-    <div id="explain"></div>
-  </details>
+  <p class="caption">지표를 누르면 전체 히스토리(±σ 밴드)·분포·설명이 뜹니다.</p>
+  <div class="tiles" id="tiles"></div>
 </main>
 <script type="module" src="assets/js/pages/detail.js"></script>
 </body>

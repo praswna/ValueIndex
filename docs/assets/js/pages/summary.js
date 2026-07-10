@@ -4,6 +4,7 @@ import { load, fmt, fmtSigned } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render, ratingBadge } from "../charts.js";
 import { cleanPairs } from "../stats.js";
+import { openModal } from "../modal.js";
 
 injectNav();
 const { meta, registry, overview, context } =
@@ -55,21 +56,6 @@ $("ctx-tiles").innerHTML = CTX_KEYS.map((key) => `
     <span class="tile-sub">${ind(key).unit || ""}</span>
   </button>`).join("");
 
-// ---- modal ----
-const overlay = $("modal-overlay");
-function openModal(html) {
-  $("modal-body").innerHTML = html;
-  overlay.hidden = false;
-  document.body.style.overflow = "hidden";
-}
-function closeModal() {
-  overlay.hidden = true;
-  document.body.style.overflow = "";
-}
-$("modal-close").addEventListener("click", closeModal);
-overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-
 function spark(id, dates, values, color) {
   render($(id), [{ x: dates, y: values, mode: "lines",
     line: { color, width: 1.8 } }],
@@ -94,7 +80,7 @@ async function showValuation(key) {
     </div>
     <p class="modal-desc">${m.what_ko || ""}</p>
     <p class="caption">${m.interpret_ko || ""}</p>
-    <p><a href="detail.html">🔍 상세 페이지에서 전체 분석 보기</a></p>`);
+    <p><a href="detail.html#${key}">🔍 상세 페이지에서 전체 분석 보기</a></p>`);
   const p = await panel();
   const { dates, values } = cleanPairs(p.dates, p.series[key]);
   spark("mspark", dates, values, registry.series_colors[key] || "#2a78d6");

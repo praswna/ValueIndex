@@ -11,27 +11,17 @@
 </head>
 <body>
 <main>
-  <h1>🇰🇷 한국 시장 (KOSPI)</h1>
-  <div class="box box-info"><b>왜 미국과 지표 구성이 다른가요?</b><br>
+  <h1>🇰🇷 한국 시장</h1>
+  <p class="caption">KOSPI와 한국 밸류에이션·환율·금리입니다. 누르면 차트와 해석이 뜹니다.</p>
+  <div id="unavailable"></div>
+  <div class="tiles" id="tiles"></div>
+
+  <details class="vi">
+    <summary>왜 미국과 지표 구성이 다른가요?</summary>
     한국은 10년치 실질이익의 장기 데이터가 없어 <b>CAPE를 계산할 수 없습니다.</b>
     대신 KRX가 공개하는 지수 <b>PER·PBR·배당수익률</b>(2004년~)로 밸류에이션을 봅니다.
-    히스토리가 20여 년으로 짧아 등급의 신뢰도는 미국(150년)보다 낮습니다 (⚠️ 표시).</div>
-  <div id="unavailable"></div>
-
-  <h2>KOSPI 지수</h2>
-  <div id="kospi-chart" class="chart"></div>
-
-  <h2>KOSPI 밸류에이션</h2>
-  <div class="grid-3" id="val-cards"></div>
-  <div id="val-charts"></div>
-
-  <h2>미국과 나란히 보기</h2>
-  <p class="caption">두 시장의 후행 PER을 각자의 역사 백분위로 비교합니다 — 절대 배수보다
-    '각 시장 기준으로 지금 비싼가'가 비교의 핵심입니다.</p>
-  <div id="compare-chart" class="chart"></div>
-
-  <h2>환율·금리</h2>
-  <div class="grid-2" id="macro-charts"></div>
+    히스토리가 20여 년으로 짧아 등급의 신뢰도는 미국(150년)보다 낮습니다 (⚠️ 표시).
+  </details>
 </main>
 <script type="module" src="assets/js/pages/korea.js"></script>
 </body>

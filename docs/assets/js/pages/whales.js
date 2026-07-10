@@ -3,6 +3,7 @@
 import { load } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render } from "../charts.js";
+import { openModal } from "../modal.js";
 
 injectNav();
 const { meta, registry, whales } = await load("registry", "whales");
@@ -41,16 +42,6 @@ if (whales.unavailable || !whales.whales || !whales.whales.length) {
     </button>`).join("");
 }
 
-// ---- modal ----
-const overlay = $("modal-overlay");
-function closeModal() {
-  overlay.hidden = true;
-  document.body.style.overflow = "";
-}
-$("modal-close").addEventListener("click", closeModal);
-overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-
 function changesBlock(w) {
   if (!w.prior_quarter) {
     return `<div class="caption">직전 분기 데이터가 없어 변화를 계산할 수 없습니다 (첫 공시).</div>`;
@@ -74,7 +65,7 @@ function openWhale(slug) {
   if (!w) return;
   const noteClass = w.region === "KR" ? "box-warn" : "box-info";
   const hasHist = w.history && w.history.quarters.length >= 2;
-  $("modal-body").innerHTML = `
+  openModal(`
     <h2 style="margin:0 0 2px">${FLAG[w.region] || ""} ${w.name_ko}</h2>
     <div class="caption">${w.as_of} 기준 · 미국주식 ${w.holdings_count}종목 ·
       총 ${usd(w.total_value)} · 상위5 집중도 ${pct(w.top5_weight)}${
@@ -91,9 +82,7 @@ function openWhale(slug) {
     <div class="whale-changes">${changesBlock(w)}</div>
     ${hasHist ? `<h3 style="margin-top:16px">미국주식 운용규모 추이</h3>
       <div id="m-hist" class="chart"></div>
-      <div class="caption">분기가 쌓일수록 길어지는 기록입니다 (13F 공시 기준).</div>` : ""}`;
-  overlay.hidden = false;
-  document.body.style.overflow = "hidden";
+      <div class="caption">분기가 쌓일수록 길어지는 기록입니다 (13F 공시 기준).</div>` : ""}`);
 
   const top = w.top;
   const names = top.map((h) => h.name).reverse();
