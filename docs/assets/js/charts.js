@@ -64,12 +64,12 @@ function attachScrub(el) {
   };
 
   let raf = null;
-  const scrub = (ev) => {
+  const scrubAt = (clientX) => {
     const fl = el._fullLayout;
     if (!fl || !fl.xaxis || !fl._size) return;
     if (!anchor) anchor = prepare();
     if (!anchor || !anchor.ms.length) return;
-    const px = ev.clientX - el.getBoundingClientRect().left - fl._size.l;
+    const px = clientX - el.getBoundingClientRect().left - fl._size.l;
     if (px < -8 || px > fl._size.w + 8) return;
     const target = fl.xaxis.p2c(Math.max(0, Math.min(fl._size.w, px)));
     if (target === undefined || target === null || Number.isNaN(target)) return;
@@ -88,12 +88,32 @@ function attachScrub(el) {
       } catch { /* chart mid-relayout */ }
     });
   };
-  el.addEventListener("pointerdown", (ev) => {
-    if (ev.pointerType !== "mouse") scrub(ev);
-  });
-  el.addEventListener("pointermove", (ev) => {
-    if (ev.pointerType !== "mouse" && ev.buttons) scrub(ev);
-  });
+
+  // Raw touch events with manual gesture arbitration: mobile browsers stop
+  // streaming pointermove once they claim a pan, so we decide ourselves —
+  // a horizontal-first drag becomes a scrub (preventDefault keeps the events
+  // coming), a vertical-first drag is released to the page scroll.
+  let gesture = null; // { sx, sy, claimed }
+  el.addEventListener("touchstart", (ev) => {
+    const t = ev.touches[0];
+    gesture = { sx: t.clientX, sy: t.clientY, claimed: false };
+    scrubAt(t.clientX);
+  }, { passive: true });
+  el.addEventListener("touchmove", (ev) => {
+    if (!gesture) return;
+    const t = ev.touches[0];
+    if (!gesture.claimed) {
+      const dx = Math.abs(t.clientX - gesture.sx);
+      const dy = Math.abs(t.clientY - gesture.sy);
+      if (dx < 6 && dy < 6) return;      // direction not decided yet
+      if (dx <= dy) { gesture = null; return; }  // vertical -> page scrolls
+      gesture.claimed = true;            // horizontal -> scrub
+    }
+    if (ev.cancelable) ev.preventDefault();
+    scrubAt(t.clientX);
+  }, { passive: false });
+  el.addEventListener("touchend", () => { gesture = null; });
+  el.addEventListener("touchcancel", () => { gesture = null; });
   if (el.on) el.on("plotly_afterplot", () => { anchor = null; });
 }
 
