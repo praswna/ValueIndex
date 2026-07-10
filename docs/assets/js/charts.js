@@ -39,9 +39,67 @@ export function baseLayout(registry, overrides = {}, height = 420) {
 
 export const CONFIG = { responsive: true, displayModeBar: false, scrollZoom: false };
 
+// Touch scrubbing: dragging a finger horizontally across a time-series chart
+// moves the crosshair and live-updates the unified tooltip (vertical drags
+// still scroll the page thanks to touch-action: pan-y). Desktop mice already
+// get live hover on move, so this only handles touch/pen.
+function attachScrub(el) {
+  if (el._viScrub) return;
+  el._viScrub = true;
+
+  // Anchor on the longest visible trace; precompute its x values on the
+  // axis' internal (numeric) scale so each scrub is a cheap binary search.
+  let anchor = null;
+  const prepare = () => {
+    const fl = el._fullLayout;
+    if (!fl || !fl.xaxis || !el.data) return null;
+    let best = -1, bestLen = 0;
+    el.data.forEach((tr, i) => {
+      if (tr.visible === false || !tr.x || tr.hoverinfo === "skip") return;
+      if (tr.x.length > bestLen) { best = i; bestLen = tr.x.length; }
+    });
+    if (best < 0) return null;
+    const ms = Array.from(el.data[best].x, (v) => fl.xaxis.d2c(v));
+    return { curve: best, ms };
+  };
+
+  let raf = null;
+  const scrub = (ev) => {
+    const fl = el._fullLayout;
+    if (!fl || !fl.xaxis || !fl._size) return;
+    if (!anchor) anchor = prepare();
+    if (!anchor || !anchor.ms.length) return;
+    const px = ev.clientX - el.getBoundingClientRect().left - fl._size.l;
+    if (px < -8 || px > fl._size.w + 8) return;
+    const target = fl.xaxis.p2c(Math.max(0, Math.min(fl._size.w, px)));
+    if (target === undefined || target === null || Number.isNaN(target)) return;
+    // binary search for the nearest data point
+    const a = anchor.ms;
+    let lo = 0, hi = a.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (a[mid] < target) lo = mid; else hi = mid;
+    }
+    const i = Math.abs(a[lo] - target) <= Math.abs(a[hi] - target) ? lo : hi;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      try {
+        Plotly.Fx.hover(el, [{ curveNumber: anchor.curve, pointNumber: i }]);
+      } catch { /* chart mid-relayout */ }
+    });
+  };
+  el.addEventListener("pointerdown", (ev) => {
+    if (ev.pointerType !== "mouse") scrub(ev);
+  });
+  el.addEventListener("pointermove", (ev) => {
+    if (ev.pointerType !== "mouse" && ev.buttons) scrub(ev);
+  });
+  if (el.on) el.on("plotly_afterplot", () => { anchor = null; });
+}
+
 // Mobile-friendly render: lock every axis (fixedrange) and disable drag so a
 // touch on the chart scrolls the page instead of zooming/panning. Tooltips
-// (hover/tap) still work.
+// (hover/tap) still work, and x-hover charts get touch scrubbing.
 export function render(el, traces, layout) {
   const lay = { ...layout, dragmode: false };
   lay.xaxis = { ...(lay.xaxis || {}), fixedrange: true };
@@ -49,7 +107,10 @@ export function render(el, traces, layout) {
   for (const k of Object.keys(lay)) {
     if (/^[xy]axis\d+$/.test(k)) lay[k] = { ...lay[k], fixedrange: true };
   }
-  return Plotly.newPlot(el, traces, lay, CONFIG);
+  const p = Plotly.newPlot(el, traces, lay, CONFIG);
+  const hm = lay.hovermode === undefined ? "x unified" : lay.hovermode;
+  if (typeof hm === "string" && hm.startsWith("x")) p.then(() => attachScrub(el));
+  return p;
 }
 
 export function lineTrace(dates, values, name, color, extra = {}) {
