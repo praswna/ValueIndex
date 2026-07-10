@@ -93,12 +93,18 @@ function attachScrub(el) {
   // streaming pointermove once they claim a pan, so we decide ourselves —
   // a horizontal-first drag becomes a scrub (preventDefault keeps the events
   // coming), a vertical-first drag is released to the page scroll.
+  // Capture phase, because Plotly's drag layer swallows touches over the
+  // plot area (stopPropagation) — bubbling listeners only ever fired on the
+  // thin axis strip below it.
   let gesture = null; // { sx, sy, claimed }
   el.addEventListener("touchstart", (ev) => {
     const t = ev.touches[0];
     gesture = { sx: t.clientX, sy: t.clientY, claimed: false };
+    // Own the whole touch interaction: Plotly's own touch handling both
+    // duplicates the tap-tooltip (ours below) and hides hover during moves.
+    ev.stopPropagation();
     scrubAt(t.clientX);
-  }, { passive: true });
+  }, { passive: true, capture: true });
   el.addEventListener("touchmove", (ev) => {
     if (!gesture) return;
     const t = ev.touches[0];
@@ -110,10 +116,16 @@ function attachScrub(el) {
       gesture.claimed = true;            // horizontal -> scrub
     }
     if (ev.cancelable) ev.preventDefault();
+    // Once claimed, starve Plotly's own drag handlers — they treat the move
+    // as a drag and hide the hover label we're driving.
+    ev.stopPropagation();
     scrubAt(t.clientX);
-  }, { passive: false });
-  el.addEventListener("touchend", () => { gesture = null; });
-  el.addEventListener("touchcancel", () => { gesture = null; });
+  }, { passive: false, capture: true });
+  el.addEventListener("touchend", (ev) => {
+    if (gesture && gesture.claimed) ev.stopPropagation();
+    gesture = null;
+  }, { capture: true });
+  el.addEventListener("touchcancel", () => { gesture = null; }, { capture: true });
   if (el.on) el.on("plotly_afterplot", () => { anchor = null; });
 }
 
