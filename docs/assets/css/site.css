@@ -179,10 +179,8 @@ details.vi[open] summary { margin-bottom: 8px; }
   .modal-stats { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* whale tracker */
-.whale-card { background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 18px; margin: 18px 0; }
-.whale-head h2 { margin: 2px 0 2px; }
+/* whale tracker (detail lives in the popup) */
+.modal-lg { max-width: 640px; }
 .note-sm { font-size: 0.86rem; margin: 8px 0 10px; }
 .whale-changes { font-size: 0.9rem; padding-top: 6px; }
 .chg-head { font-weight: 600; color: var(--ink-2); margin-bottom: 8px; }

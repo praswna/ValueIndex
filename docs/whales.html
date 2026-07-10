@@ -11,20 +11,27 @@
 </head>
 <body>
 <main>
-  <h1>🐋 큰손 추적기 (기관 13F)</h1>
-  <div class="box box-info"><b>이게 무슨 데이터인가요?</b><br>
-    미국 상장주식을 <b>1억 달러 이상</b> 굴리는 기관은 분기마다 <b>보유 종목 전체</b>를
-    SEC(미 증권거래위)에 <b>13F</b>로 공시합니다. 여기서 버핏 등 '큰손'이 <b>실제로 뭘
-    사고팔았는지</b>를 직전 분기와 비교해 보여줍니다.
-    <ul style="margin:6px 0 0 18px">
-      <li>갱신은 <b>분기 단위</b>입니다 — 13F는 분기말 45일 뒤에 공시되므로 매일·매주 볼
-        데이터가 아닙니다.</li>
-      <li>13F는 <b>미국 상장주식만</b> 담습니다 — 채권·현금·해외주식·공매도는 안 나옵니다.
-        특히 <b>국민연금은 미국 주식 부분만</b> 보이는 점에 유의하세요.</li>
-    </ul>
-  </div>
-  <div id="whales"></div>
+  <h1>🐋 큰손 추적기</h1>
+  <p class="caption">큰손들의 미국주식 운용규모입니다. 누르면 보유 종목과 분기 변화가 뜹니다.</p>
+  <div id="unavailable"></div>
+  <div class="tiles" id="whale-tiles"></div>
+
+  <details class="vi">
+    <summary>이게 무슨 데이터인가요?</summary>
+    미국 상장주식을 <b>1억 달러 이상</b> 굴리는 기관은 분기마다 보유 종목 전체를
+    SEC(미 증권거래위)에 <b>13F</b>로 공시합니다. 갱신은 <b>분기 단위</b>(분기말 45일 뒤
+    공시)라 매일 볼 데이터가 아니고, <b>미국 상장주식만</b> 담겨 채권·현금·해외주식은
+    안 나옵니다 — 특히 국민연금은 미국 주식 부분만 보입니다.
+  </details>
 </main>
+
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal modal-lg" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modal-close" aria-label="닫기">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
 <script type="module" src="assets/js/pages/whales.js"></script>
 </body>
 </html>
