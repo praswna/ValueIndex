@@ -7,6 +7,7 @@ const PAGES = [
   ["korea.html", "한국"],
   ["whales.html", "큰손"],
   ["cadence.html", "주기별"],
+  ["signals.html", "단기"],
   ["report.html", "월간점검"],
   ["guide.html", "가이드"],
   ["start.html", "시작"],

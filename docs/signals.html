@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("vi-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 단기 시그널</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>📉 단기 시그널</h1>
+  <p class="caption">단타족이 보는 기술적 지표들의 <b>현재 상태</b>입니다 (일간 종가 기준,
+    하루 1회 갱신 — 장중 실시간이 아닙니다). 누르면 그 신호의 <b>역사 성적표</b>가 뜹니다.</p>
+  <div class="check-row" id="market-btns" style="margin-bottom:10px"></div>
+  <div class="tiles" id="tiles"></div>
+
+  <details class="vi">
+    <summary>이 탭을 읽는 법 (중요)</summary>
+    여기 있는 신호들은 책과 유튜브에 늘 나오는 것들이지만, 팝업의 백테스트가 보여주듯
+    <b>거래비용을 넣으면 통계적 우위가 대부분 사라집니다.</b> 이 탭의 목적은 매매 신호
+    제공이 아니라 ① 지금 시장의 단기 상태를 한눈에 보고 ② 신호의 실제 성적을 직접
+    확인해 <b>단타 유혹을 데이터로 식히는 것</b>입니다. 백테스트는 과거일 뿐이며,
+    실시간 호가·슬리피지·세금까지 넣으면 성적은 더 나빠집니다.
+  </details>
+</main>
+<script type="module" src="assets/js/pages/signals.js"></script>
+</body>
+</html>
