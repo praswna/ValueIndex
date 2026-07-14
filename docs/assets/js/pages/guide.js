@@ -4,6 +4,7 @@ import { load, fmt, fmtSigned } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render, hline } from "../charts.js";
 import { interp } from "../stats.js";
+import { initStrategies } from "../strategies.js";
 
 injectNav();
 const { meta, registry, overview, guide, content } =
@@ -93,3 +94,5 @@ $("per-indicator").innerHTML = registry.valuation_keys.map((key) => {
 }).join("");
 
 $("resources").innerHTML = content.resources_ko;
+
+initStrategies("strat-tiles");
