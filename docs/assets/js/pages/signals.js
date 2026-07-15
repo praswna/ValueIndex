@@ -102,13 +102,14 @@ function drawTiles() {
 }
 
 // market toggle
+$("market-btns").classList.add("subtabs");
 for (const key of Object.keys(MARKETS).filter((k) => MARKETS[k])) {
   const btn = document.createElement("button");
-  btn.className = "vi-btn" + (key === market ? " active" : "");
+  btn.className = "subtab" + (key === market ? " active" : "");
   btn.textContent = MARKETS[key].label;
   btn.addEventListener("click", () => {
     market = key;
-    document.querySelectorAll("#market-btns .vi-btn").forEach((b) =>
+    document.querySelectorAll("#market-btns .subtab").forEach((b) =>
       b.classList.toggle("active", b.textContent === MARKETS[key].label));
     drawTiles();
   });

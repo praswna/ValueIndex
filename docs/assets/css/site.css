@@ -136,6 +136,15 @@ button.vi-btn:hover { border-color: var(--accent); color: var(--accent); }
 button.vi-btn.active { border-color: var(--accent); color: var(--accent);
   font-weight: 600; }
 
+/* in-page sub-tabs — same pill style as the top nav categories */
+.subtabs { display: flex; flex-wrap: wrap; gap: 3px; }
+.subtab { font: inherit; font-size: 0.84rem; line-height: 1.3; padding: 3px 9px;
+  border: 1px solid var(--grid); border-radius: 999px; background: var(--surface);
+  color: var(--ink-2); cursor: pointer; }
+.subtab:hover { border-color: var(--accent); color: var(--accent); }
+.subtab.active { background: var(--accent); color: #fff; font-weight: 600;
+  border-color: var(--accent); }
+
 /* details/expander */
 details.vi { background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 10px 16px; margin: 10px 0; }

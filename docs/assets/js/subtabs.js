@@ -16,8 +16,9 @@ export function initSubtabs(barId, tabs) {
     window.dispatchEvent(new Event("resize"));
   }
 
+  bar.classList.add("subtabs");
   bar.innerHTML = tabs.map((t) =>
-    `<button class="vi-btn" data-tab="${t.id}">${t.label}</button>`).join("");
+    `<button class="subtab" data-tab="${t.id}">${t.label}</button>`).join("");
   bar.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-tab]");
     if (btn) select(btn.dataset.tab);
