@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("vi-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ValueIndex — 브레이크</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>🛑 브레이크</h1>
+  <p class="lead">"지금 확 지르고 싶다"는 순간을 위한 페이지입니다. 충동을 혼내는 게
+    아니라, <b>충동과 결정 사이에 시간을 끼워 넣는 것</b>이 목적입니다. 좋은 기회는
+    하루 안에 사라지지 않습니다 — 사라지는 건 나쁜 기회뿐입니다.</p>
+  <div id="brake-tabs" style="margin:6px 0 14px"></div>
+
+  <div id="btab-stop">
+    <h2>1단계 — 이게 투자인가, 도박 충동인가</h2>
+    <p class="caption">해당하는 항목을 전부 체크하세요. 정직하게.</p>
+    <div id="quiz"></div>
+    <div id="quiz-verdict"></div>
+
+    <h2>2단계 — 24시간 타이머</h2>
+    <p class="caption">사고 싶은 것과 이유를 적고 타이머를 켜세요. <b>내일 이 시간에도
+      같은 생각이면</b> 그때 계획을 세워 진행하는 겁니다. 적는 행위 자체가 충동의
+      절반을 식힙니다.</p>
+    <div class="controls">
+      <label class="control">사고 싶은 것
+        <input type="text" id="urge-what" maxlength="40" placeholder="예: 레버리지 ETF 몰빵"></label>
+      <label class="control">지금 사고 싶은 이유 (한 문장)
+        <input type="text" id="urge-why" maxlength="80" placeholder="예: 오늘 5% 올라서"></label>
+    </div>
+    <button class="vi-btn" id="urge-start">🛑 24시간 타이머 시작</button>
+    <div id="urge-list"></div>
+  </div>
+
+  <div id="btab-cost" hidden>
+    <h2>이 돈의 다른 미래</h2>
+    <p class="caption">지르려는 금액을 넣어보세요. 같은 돈을 인덱스에 두면 어떻게 되는지
+      — 도박의 진짜 가격은 잃는 돈이 아니라 <b>이 미래를 파는 것</b>입니다.</p>
+    <div class="controls">
+      <label class="control">지르려는 금액 (만원)
+        <input type="number" id="cost-amt" min="10" step="10" value="500"></label>
+    </div>
+    <div class="grid-3" id="cost-cards"></div>
+    <p class="caption" id="cost-note"></p>
+
+    <h2>그래도 하겠다면 — 피해 최소화 규칙</h2>
+    <div class="box box-warn">
+      충동을 완전히 못 이기겠다면, 금지 대신 <b>격리</b>가 현실적입니다:
+      <ul style="margin:6px 0 0 18px">
+        <li><b>순자산의 5% 이하</b>를 '수업료 계좌'로 분리 — 전부 잃어도 계획이 안 바뀌는 금액만</li>
+        <li>본 계좌와 <b>다른 증권사</b>로 (이체 마찰 = 브레이크)</li>
+        <li>신용·미수·몰빵 금지 — 잃는 속도만 빨라집니다</li>
+        <li>수업료 계좌가 0이 되면 <b>그 해에는 리필 금지</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="btab-log" hidden>
+    <h2>충동 일지</h2>
+    <p class="caption">타이머가 끝난 충동들의 기록입니다. <b>'참았다'가 쌓이는 것</b>을
+      보는 게 이 페이지의 보상입니다. 기록은 이 브라우저에만 저장됩니다.</p>
+    <div class="grid-3" id="log-stats"></div>
+    <div id="log-list"></div>
+
+    <h2>충동이 오면 대신 할 것</h2>
+    <ul>
+      <li>📉 <a href="signals.html">단기 시그널 탭</a>에서 그 "신호"의 역사 성적표를 열어보기
+        — 대부분 <b>"통계적 우위 없음"</b>이 적혀 있습니다</li>
+      <li>🗺️ <a href="guide.html#strategies">전략 지도</a>에서 단타의 상대(HFT, 진입 불가 0점)를 확인하기</li>
+      <li>⚖️ <a href="start.html#rebalance">리밸런싱 도우미</a>만 확인하고 닫기 —
+        "±5%p 안이면 아무것도 하지 않는다"</li>
+      <li>10분 산책. 충동은 파도라서, 타지 않으면 지나갑니다</li>
+    </ul>
+    <div class="box box-info note-sm">투자 충동이 아니라 <b>도박 문제</b>로 느껴진다면
+      (멈추고 싶은데 멈춰지지 않음, 손실 은폐, 생활비 침범) — 한국도박문제예방치유원
+      전화 <b>1336</b>에서 무료·익명 상담을 받을 수 있습니다. 부끄러운 일이 아닙니다.</div>
+  </div>
+</main>
+<script type="module" src="assets/js/pages/brake.js"></script>
+</body>
+</html>

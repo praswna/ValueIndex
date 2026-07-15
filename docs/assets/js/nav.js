@@ -12,6 +12,7 @@ const PAGES = [
   ["guide.html", "가이드"],
   ["start.html", "시작"],
   ["discipline.html", "규율"],
+  ["brake.html", "브레이크"],
 ];
 
 function effectiveTheme() {
