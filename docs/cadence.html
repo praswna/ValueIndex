@@ -2,43 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <script>try{var t=localStorage.getItem("vi-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ValueIndex — 주기별 숫자</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
-  <link rel="stylesheet" href="assets/css/site.css">
-  <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
+  <title>ValueIndex — 이동 중…</title>
+  <script>location.replace("thermometer.html#cadence");</script>
+  <meta http-equiv="refresh" content="0; url=thermometer.html#cadence">
 </head>
-<body>
-<main>
-  <h1>⏱️ 주기별 숫자 — 얼마나 자주 봐야 하나</h1>
-  <div class="box box-info">같은 숫자라도 <b>의미 있게 바뀌는 주기</b>가 다릅니다.
-    이 페이지는 지표를 갱신 주기별로 묶어, <b>그 주기보다 자주 보는 것은 소음</b>이라는
-    것을 보여줍니다. 장기 투자자의 본론은 맨 아래 '한 달 단위'입니다.</div>
-  <div id="cad-tabs" style="margin:6px 0 14px"></div>
-
-  <div id="ctab-daily">
-  <h2>📅 하루 단위로 변하는 것</h2>
-  <p class="caption">매일 바뀌지만 <b>매일 행동할 이유는 없습니다.</b> 뉴스가 매일 다루는
-    숫자들이자, 매일 보면 감정만 흔들리는 숫자들입니다.</p>
-  <div class="tiles" id="daily"></div>
-
-  </div>
-
-  <div id="ctab-weekly" hidden>
-  <h2>🗓️ 일주일 단위</h2>
-  <p class="caption">주 단위로 갱신되거나, 그보다 자주 봐도 새 정보가 없는 심리·신용 지표들.</p>
-  <div class="tiles" id="weekly"></div>
-
-  </div>
-
-  <div id="ctab-monthly" hidden>
-  <h2>📆 한 달 단위 — 이 앱의 본론</h2>
-  <p class="caption">밸류에이션 등급과 거시 지표는 월/분기로 갱신됩니다.
-    <a href="discipline.html">🧘 규율 페이지의 월간 점검 루틴</a>이 딱 이 주기입니다.</p>
-  <div class="tiles" id="monthly"></div>
-  </div>
-</main>
-<script type="module" src="assets/js/pages/cadence.js"></script>
-</body>
+<body><a href="thermometer.html#cadence">온도계의 주기별 탭으로 이동</a></body>
 </html>

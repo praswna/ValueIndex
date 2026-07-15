@@ -1,18 +1,15 @@
 // Shared header nav + footer, injected on every page.
 
 const PAGES = [
-  ["summary.html", "요약"],
-  ["index.html", "개요"],
+  ["index.html", "요약"],
   ["thermometer.html", "온도계"],
   ["korea.html", "한국"],
   ["whales.html", "큰손"],
-  ["cadence.html", "주기별"],
   ["signals.html", "단기"],
   ["report.html", "월간점검"],
   ["guide.html", "가이드"],
   ["start.html", "시작"],
   ["discipline.html", "규율"],
-  ["brake.html", "브레이크"],
 ];
 
 function effectiveTheme() {

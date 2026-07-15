@@ -4,109 +4,102 @@
   <meta charset="utf-8">
   <script>try{var t=localStorage.getItem("vi-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ValueIndex — 밸류에이션 개요</title>
+  <title>ValueIndex — 요약</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
   <link rel="stylesheet" href="assets/css/site.css">
   <script src="assets/vendor/plotly-cartesian-3.1.0.min.js"></script>
 </head>
 <body>
 <main>
-  <h1>📊 밸류에이션 개요</h1>
-  <p class="lead">
-    미국 주식시장이 역사적으로 얼마나 비싼지/싼지를 여러 지표로 비교합니다.
-    🔴 빨강 = 역사적 고평가(위험), 🔵 파랑 = 저평가(기회), ⚪ 회색 = 적정 범위.
-    자세한 해석법은 <a href="guide.html">📚 지표 가이드</a>를 보세요.
-  </p>
-  <div id="index-tabs" style="margin:6px 0 14px"></div>
+  <h1>⚡ 요약</h1>
+  <p class="caption">시장 전체를 한 화면에 — 숫자를 누르면 상세가 뜹니다.
+    🔴 고평가 · 🔵 저평가 · ⚪ 적정. 해석법은 <a href="guide.html">📚 가이드</a>.</p>
+  <div id="main-tabs" style="margin:6px 0 14px"></div>
 
-  <div id="itab-main">
-  <details class="vi">
-    <summary>🕰️ 역사 타임머신 — 과거 시점의 시장은 어땠을까?</summary>
-    <p class="caption">시점을 고르면 <b>그 시점까지의 데이터만으로</b> 등급·종합지수·닮은 과거를
-      다시 계산합니다 (당시 투자자가 알 수 있었던 정보만 사용).</p>
-    <div class="check-row" id="tm-presets"></div>
-    <div class="controls">
-      <label class="control">연도 선택: <b id="tm-year-label"></b>
-        <input type="range" id="tm-year" min="1900" step="1">
-      </label>
-    </div>
-  </details>
-  <div id="tm-banner"></div>
-
-  <h2>종합 밸류에이션 지수 (PCA)</h2>
-  <div class="split">
-    <div class="card">
-      <div class="metric-label">종합 지수 (σ)</div>
-      <div class="metric-value" id="pca-value">…</div>
-      <div id="pca-badge"></div>
-      <div class="metric-note" id="pca-note"></div>
-    </div>
-    <div id="pca-chart" class="chart"></div>
-  </div>
-  <details class="vi">
-    <summary>이 지수는 어떻게 계산되나요?</summary>
-    <p>9개 지표를 방향 정렬(높을수록 고평가)한 z-score 행렬의 상관행렬을
-      <b>고유값 분해</b>해서 제1주성분(가장 많은 공통 변동을 담는 축)을 추출합니다.
-      지표별 가중치는 데이터가 스스로 정한 것이며, 시작 시점이 다른 지표는
-      그 달에 존재하는 지표만으로 점수를 계산합니다.</p>
-    <div class="tbl-wrap" id="pca-weights"></div>
-  </details>
-
+  <div id="itab-home">
+    <div id="composite"></div>
+    <h2>밸류에이션</h2>
+    <div class="tiles" id="val-tiles"></div>
+    <h2>온도계</h2>
+    <div class="tiles" id="ctx-tiles"></div>
+    <p style="margin-top:16px"><a href="data/valueindex_panel.csv" download>💾 전체 지표 데이터 다운로드 (CSV)</a></p>
   </div>
 
-  <div id="itab-cards" hidden>
-  <h2>지표별 현재 상태</h2>
-  <div class="grid-3" id="cards"></div>
-  <p class="caption" id="short-note"></p>
+  <div id="itab-composite" hidden>
+    <details class="vi">
+      <summary>🕰️ 역사 타임머신 — 과거 시점의 시장은 어땠을까?</summary>
+      <p class="caption">시점을 고르면 <b>그 시점까지의 데이터만으로</b> 종합지수·게이지·닮은 과거를
+        다시 계산합니다 (당시 투자자가 알 수 있었던 정보만 사용).</p>
+      <div class="check-row" id="tm-presets"></div>
+      <div class="controls">
+        <label class="control">연도 선택: <b id="tm-year-label"></b>
+          <input type="range" id="tm-year" min="1900" step="1">
+        </label>
+      </div>
+    </details>
+    <div id="tm-banner"></div>
 
-  <h2>고평가 게이지</h2>
-  <p class="caption">모든 지표를 같은 방향으로 정렬한 <b>역사적 백분위</b>입니다.
-    100에 가까울수록 그 지표 기준으로 역사상 가장 비싼 구간입니다.</p>
-  <div id="gauge" class="chart"></div>
+    <h2>종합 밸류에이션 지수 (PCA)</h2>
+    <div class="split">
+      <div class="card">
+        <div class="metric-label">종합 지수 (σ)</div>
+        <div class="metric-value" id="pca-value">…</div>
+        <div id="pca-badge"></div>
+        <div class="metric-note" id="pca-note"></div>
+      </div>
+      <div id="pca-chart" class="chart"></div>
+    </div>
+    <details class="vi">
+      <summary>이 지수는 어떻게 계산되나요?</summary>
+      <p>9개 지표를 방향 정렬(높을수록 고평가)한 z-score 행렬의 상관행렬을
+        <b>고유값 분해</b>해서 제1주성분(가장 많은 공통 변동을 담는 축)을 추출합니다.
+        지표별 가중치는 데이터가 스스로 정한 것이며, 시작 시점이 다른 지표는
+        그 달에 존재하는 지표만으로 점수를 계산합니다.</p>
+      <div class="tbl-wrap" id="pca-weights"></div>
+    </details>
 
-  <h2>요약 테이블</h2>
-  <div class="tbl-wrap" id="summary-table"></div>
-
-  <p><a href="data/valueindex_panel.csv" download>💾 전체 지표 데이터 다운로드 (CSV)</a></p>
+    <h2>고평가 게이지</h2>
+    <p class="caption">모든 지표를 같은 방향으로 정렬한 <b>역사적 백분위</b>입니다.
+      100에 가까울수록 그 지표 기준으로 역사상 가장 비싼 구간입니다.</p>
+    <div id="gauge" class="chart"></div>
   </div>
 
   <div id="itab-analogs" hidden>
-  <h2>🔎 오늘과 가장 닮은 과거</h2>
-  <p class="caption">9개 지표의 z-score 벡터가 현재와 가장 가까웠던 과거 국면들입니다
-    (최근접 이웃 탐색 · 최근 5년 제외 · 같은 국면 중복 제거).
-    <b>역사가 반복된다는 뜻이 아니라</b>, '비슷한 상황에서 과거엔 무슨 일이 있었나'를
-    보는 참고자료입니다.</p>
-  <div class="tbl-wrap" id="analog-table"></div>
-  <h3>닮은 시점 이후 10년, 실제 경로 <span class="caption">(실질 총수익, 시작 = 100)</span></h3>
-  <div id="analog-chart" class="chart"></div>
-  <p class="caption">표본이 몇 개뿐이라 통계적 결론은 불가능합니다 — 경로들이 서로 크게
-    다르다는 것 자체가 교훈입니다(비슷한 밸류에이션에서도 미래는 갈라집니다).</p>
-
+    <h2>🔎 오늘과 가장 닮은 과거</h2>
+    <p class="caption">9개 지표의 z-score 벡터가 현재와 가장 가까웠던 과거 국면들입니다
+      (최근접 이웃 탐색 · 최근 5년 제외 · 같은 국면 중복 제거).
+      <b>역사가 반복된다는 뜻이 아니라</b>, '비슷한 상황에서 과거엔 무슨 일이 있었나'를
+      보는 참고자료입니다.</p>
+    <div class="tbl-wrap" id="analog-table"></div>
+    <h3>닮은 시점 이후 10년, 실제 경로 <span class="caption">(실질 총수익, 시작 = 100)</span></h3>
+    <div id="analog-chart" class="chart"></div>
+    <p class="caption">표본이 몇 개뿐이라 통계적 결론은 불가능합니다 — 경로들이 서로 크게
+      다르다는 것 자체가 교훈입니다(비슷한 밸류에이션에서도 미래는 갈라집니다).</p>
   </div>
 
   <div id="itab-compare" hidden>
-  <details class="vi" id="compare-details" open>
-    <summary>📈 지표 겹쳐 보기 (비교 차트 · 상관관계)</summary>
-    <p class="caption">비교할 지표를 고르세요 (최대 4개 — 많을수록 읽기 어려워집니다)</p>
-    <div class="check-row" id="picker"></div>
-    <div class="controls">
-      <div class="control">표시 방식
-        <span class="check-row" id="norm-btns"></span>
+    <details class="vi" id="compare-details" open>
+      <summary>📈 지표 겹쳐 보기 (비교 차트 · 상관관계)</summary>
+      <p class="caption">비교할 지표를 고르세요 (최대 4개 — 많을수록 읽기 어려워집니다)</p>
+      <div class="check-row" id="picker"></div>
+      <div class="controls">
+        <div class="control">표시 방식
+          <span class="check-row" id="norm-btns"></span>
+        </div>
+        <label class="control">시작 연도: <b id="from-label"></b>
+          <input type="range" id="from-year" step="1">
+        </label>
+        <label class="control"><span><input type="checkbox" id="rec" checked> 경기침체 음영</span></label>
       </div>
-      <label class="control">시작 연도: <b id="from-label"></b>
-        <input type="range" id="from-year" step="1">
-      </label>
-      <label class="control"><span><input type="checkbox" id="rec" checked> 경기침체 음영</span></label>
-    </div>
-    <div id="chart" class="chart"></div>
-    <p class="caption" id="norm-note"></p>
+      <div id="chart" class="chart"></div>
+      <p class="caption" id="norm-note"></p>
 
-    <h3>지표 상관관계</h3>
-    <p class="caption">방향을 정렬한(높을수록 고평가) 백분위끼리의 상관계수입니다.
-      밸류에이션 지표들은 서로 상관이 높습니다 — <b>지표를 늘려도 정보가 비례해 늘지 않는
-      이유</b>이자, 여러 지표가 같은 방향을 가리킬 때 신뢰가 커지는 이유입니다.</p>
-    <div id="heatmap" class="chart"></div>
-  </details>
+      <h3>지표 상관관계</h3>
+      <p class="caption">방향을 정렬한(높을수록 고평가) 백분위끼리의 상관계수입니다.
+        밸류에이션 지표들은 서로 상관이 높습니다 — <b>지표를 늘려도 정보가 비례해 늘지 않는
+        이유</b>이자, 여러 지표가 같은 방향을 가리킬 때 신뢰가 커지는 이유입니다.</p>
+      <div id="heatmap" class="chart"></div>
+    </details>
   </div>
 </main>
 <script type="module" src="assets/js/pages/index.js"></script>

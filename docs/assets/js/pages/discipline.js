@@ -113,9 +113,14 @@ const RULES = [
   },
 ];
 
-// ---- tiles (sorted by stars) ----
+// ---- tiles (brake entry first, then rules sorted by stars) ----
 const sorted = [...RULES].sort((a, b) => b.stars - a.stars);
-document.getElementById("disc-tiles").innerHTML = sorted.map((r, i) => `
+document.getElementById("disc-tiles").innerHTML = `
+  <a class="tile" href="brake.html" style="border-color:#e34948;text-decoration:none">
+    <span class="tile-label">지금 지르고 싶은가?</span>
+    <span class="tile-value" style="font-size:1.15rem">🛑 브레이크</span>
+    <span class="tile-sub">충동과 결정 사이에 24시간 끼우기</span>
+  </a>` + sorted.map((r, i) => `
   <button class="tile" data-rule="${r.id}">
     <span class="tile-label">${i + 1}. ${r.label}</span>
     <span class="tile-value" style="font-size:1.05rem">${STARS(r.stars)}</span>
@@ -220,5 +225,6 @@ function show(id) {
 
 document.getElementById("disc-tiles").addEventListener("click", (e) => {
   const tile = e.target.closest(".tile");
-  if (tile) show(tile.dataset.rule);
+  if (tile && tile.dataset.rule) show(tile.dataset.rule);
+  // the brake entry is a plain link — let it navigate
 });
