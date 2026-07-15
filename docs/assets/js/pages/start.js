@@ -5,6 +5,7 @@ import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render } from "../charts.js";
 import { cleanPairs, pctChange } from "../stats.js";
 import { bogleExpectedReturn, simulateDca, percentileLinear } from "../mc.js";
+import { initSubtabs } from "../subtabs.js";
 
 injectNav();
 const { meta, registry, panel, overview, content } =
@@ -206,3 +207,11 @@ $("r72").addEventListener("input", draw72);
 draw72();
 
 drawMc();
+
+initSubtabs("start-tabs", [
+  { id: "guide", label: "순서 가이드", section: "stab-guide" },
+  { id: "calc", label: "계산기", section: "stab-calc" },
+  { id: "mc", label: "시뮬레이션", section: "stab-mc" },
+  { id: "rebalance", label: "리밸런싱", section: "stab-rb" },
+  { id: "rules", label: "치트시트", section: "stab-rules" },
+]);

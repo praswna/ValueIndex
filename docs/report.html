@@ -15,17 +15,26 @@
   <p class="lead">한 달에 한 번, 이 페이지 하나로 점검이 끝나도록 <b>지난 한 달 동안 바뀐
     것</b>만 모았습니다. 등급 변화가 없으면 할 일도 없습니다 — 그게 정상입니다.</p>
 
+  <div id="rep-tabs" style="margin:6px 0 14px"></div>
+
+  <div id="rtab-summary">
   <div id="headline"></div>
 
   <h2>종합 밸류에이션</h2>
   <div class="grid-2" id="composite"></div>
 
+  </div>
+
+  <div id="rtab-detail" hidden>
   <h2>지표별 등급 (한 달 전 대비)</h2>
   <div class="tbl-wrap"><table class="vi" id="ratings-tbl"></table></div>
 
   <h2>매크로 한 달 변화</h2>
   <div class="tbl-wrap"><table class="vi" id="macro-tbl"></table></div>
 
+  </div>
+
+  <div id="rtab-etc" hidden>
   <h2>🐋 최근 45일 내 큰손 새 공시</h2>
   <div id="filings"></div>
 
@@ -34,6 +43,7 @@
     ① 위 등급 변화 확인 → ② 변화가 있으면 <a href="discipline.html">규율 페이지의 시나리오
     규칙</a>대로만 행동 → ③ 적립식 자동이체가 잘 나갔는지 확인 → 끝.
     <br>등급이 그대로면 <b>아무것도 하지 않는 것</b>이 이번 달의 올바른 행동입니다.
+  </div>
   </div>
 </main>
 <script type="module" src="assets/js/pages/report.js"></script>

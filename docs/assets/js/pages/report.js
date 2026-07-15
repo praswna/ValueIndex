@@ -3,6 +3,7 @@
 import { load, fmt, fmtSigned } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { ratingBadge } from "../charts.js";
+import { initSubtabs } from "../subtabs.js";
 
 injectNav();
 const { meta, registry, report } = await load("registry", "report");
@@ -72,3 +73,9 @@ $("filings").innerHTML = report.whale_filings.length
        <a href="whales.html">큰손 추적기에서 보기</a></li>`).join("") + `</ul>`
   : `<p class="caption">최근 45일 내 새 13F 공시가 없습니다. 13F는 분기말 45일
      뒤에 몰려 나옵니다 (2·5·8·11월 중순).</p>`;
+
+initSubtabs("rep-tabs", [
+  { id: "summary", label: "변화 요약", section: "rtab-summary" },
+  { id: "detail", label: "지표·매크로", section: "rtab-detail" },
+  { id: "etc", label: "큰손·루틴", section: "rtab-etc" },
+]);

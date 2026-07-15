@@ -2,6 +2,7 @@
 
 import { load, ym } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
+import { initSubtabs } from "../subtabs.js";
 import { baseLayout, render, recessionShapes, ratingBadge } from "../charts.js";
 import { cleanPairs, drawdown } from "../stats.js";
 
@@ -76,3 +77,10 @@ function updateChecks() {
   }
 }
 updateChecks();
+
+initSubtabs("disc-tabs", [
+  { id: "why", label: "원칙", section: "dtab-why" },
+  { id: "drawdown", label: "드로다운", section: "dtab-dd" },
+  { id: "rules", label: "행동 규칙", section: "dtab-rules" },
+  { id: "checklist", label: "체크·루틴", section: "dtab-check" },
+]);

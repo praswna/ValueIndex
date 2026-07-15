@@ -4,6 +4,7 @@ import { load, fmt, fmtSigned } from "../data.js";
 import { injectNav, injectFooter } from "../nav.js";
 import { asofIndex, shiftDateStr } from "../stats.js";
 import { showContextPopup, CTX_SOURCE, isApprox } from "../ctxpop.js";
+import { initSubtabs } from "../subtabs.js";
 
 injectNav();
 const { meta, registry, context, overview } = await load("registry", "context", "overview");
@@ -45,12 +46,20 @@ for (const [group, title, desc] of SECTIONS) {
     </button>`;
   }).join("");
   root.insertAdjacentHTML("beforeend", `
-    <h2>${title}</h2>
-    ${desc ? `<p class="caption">${desc}</p>` : ""}
-    <div class="tiles">${tiles}</div>`);
+    <div id="ttab-${group}" hidden>
+      <h2>${title}</h2>
+      ${desc ? `<p class="caption">${desc}</p>` : ""}
+      <div class="tiles">${tiles}</div>
+    </div>`);
 }
 
 root.addEventListener("click", (e) => {
   const tile = e.target.closest(".tile");
   if (tile) showContextPopup(registry, overview, context, tile.dataset.key, meta);
 });
+
+initSubtabs("therm-tabs", [
+  { id: "sentiment", label: "심리", section: "ttab-sentiment" },
+  { id: "reference", label: "매크로 참고", section: "ttab-reference" },
+  { id: "macro", label: "거시·시장", section: "ttab-macro" },
+]);

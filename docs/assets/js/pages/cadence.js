@@ -6,6 +6,7 @@ import { baseLayout, render, lineTrace, ratingBadge } from "../charts.js";
 import { cleanPairs, drawdown, percentileRanks, asofIndex, shiftDateStr } from "../stats.js";
 import { openModal } from "../modal.js";
 import { CTX_SOURCE, isApprox, approxBadge } from "../ctxpop.js";
+import { initSubtabs } from "../subtabs.js";
 
 injectNav();
 const { meta, registry, panel, context, overview, korea } =
@@ -125,3 +126,9 @@ document.querySelector("main").addEventListener("click", (e) => {
   const tile = e.target.closest(".tile");
   if (tile && tile.dataset.id) show(tile.dataset.id);
 });
+
+initSubtabs("cad-tabs", [
+  { id: "daily", label: "매일", section: "ctab-daily" },
+  { id: "weekly", label: "주간", section: "ctab-weekly" },
+  { id: "monthly", label: "월간", section: "ctab-monthly" },
+]);

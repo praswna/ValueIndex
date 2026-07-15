@@ -9,6 +9,7 @@ import {
 import { asofIndex, cleanPairs, summary } from "../stats.js";
 import { alignedZFromPanel, pcaComposite, nearestAnalogs, monthsBetween } from "../quant.js";
 import { initCompare } from "../compare-section.js";
+import { initSubtabs } from "../subtabs.js";
 
 injectNav();
 const { meta, registry, panel, overview } = await load("registry", "panel", "overview");
@@ -294,12 +295,24 @@ $("tm-year-label").textContent = yearInput.value;
 
 renderAll(currentView());
 
-// ------------------------------------------- compare section (lazy on open)
-const cmpDetails = $("compare-details");
+// --------------------------- compare section (lazy on first tab selection)
 let cmpReady = false;
-cmpDetails.addEventListener("toggle", () => {
-  if (cmpDetails.open && !cmpReady) {
+document.getElementById("index-tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest('[data-tab="compare"]');
+  if (btn && !cmpReady) {
     cmpReady = true;
     initCompare({ registry, panel, overview });
   }
 });
+
+const selectIndexTab = initSubtabs("index-tabs", [
+  { id: "main", label: "종합지수", section: "itab-main" },
+  { id: "cards", label: "지표·게이지", section: "itab-cards" },
+  { id: "analogs", label: "닮은 과거", section: "itab-analogs" },
+  { id: "compare", label: "비교", section: "itab-compare" },
+]);
+// deep link straight to the compare tab still needs its init
+if (location.hash === "#compare" && !cmpReady) {
+  cmpReady = true;
+  initCompare({ registry, panel, overview });
+}

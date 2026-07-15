@@ -17,7 +17,9 @@
     🔴 빨강 = 역사적 고평가(위험), 🔵 파랑 = 저평가(기회), ⚪ 회색 = 적정 범위.
     자세한 해석법은 <a href="guide.html">📚 지표 가이드</a>를 보세요.
   </p>
+  <div id="index-tabs" style="margin:6px 0 14px"></div>
 
+  <div id="itab-main">
   <details class="vi">
     <summary>🕰️ 역사 타임머신 — 과거 시점의 시장은 어땠을까?</summary>
     <p class="caption">시점을 고르면 <b>그 시점까지의 데이터만으로</b> 등급·종합지수·닮은 과거를
@@ -50,6 +52,9 @@
     <div class="tbl-wrap" id="pca-weights"></div>
   </details>
 
+  </div>
+
+  <div id="itab-cards" hidden>
   <h2>지표별 현재 상태</h2>
   <div class="grid-3" id="cards"></div>
   <p class="caption" id="short-note"></p>
@@ -62,6 +67,10 @@
   <h2>요약 테이블</h2>
   <div class="tbl-wrap" id="summary-table"></div>
 
+  <p><a href="data/valueindex_panel.csv" download>💾 전체 지표 데이터 다운로드 (CSV)</a></p>
+  </div>
+
+  <div id="itab-analogs" hidden>
   <h2>🔎 오늘과 가장 닮은 과거</h2>
   <p class="caption">9개 지표의 z-score 벡터가 현재와 가장 가까웠던 과거 국면들입니다
     (최근접 이웃 탐색 · 최근 5년 제외 · 같은 국면 중복 제거).
@@ -73,7 +82,10 @@
   <p class="caption">표본이 몇 개뿐이라 통계적 결론은 불가능합니다 — 경로들이 서로 크게
     다르다는 것 자체가 교훈입니다(비슷한 밸류에이션에서도 미래는 갈라집니다).</p>
 
-  <details class="vi" id="compare-details">
+  </div>
+
+  <div id="itab-compare" hidden>
+  <details class="vi" id="compare-details" open>
     <summary>📈 지표 겹쳐 보기 (비교 차트 · 상관관계)</summary>
     <p class="caption">비교할 지표를 고르세요 (최대 4개 — 많을수록 읽기 어려워집니다)</p>
     <div class="check-row" id="picker"></div>
@@ -95,8 +107,7 @@
       이유</b>이자, 여러 지표가 같은 방향을 가리킬 때 신뢰가 커지는 이유입니다.</p>
     <div id="heatmap" class="chart"></div>
   </details>
-
-  <p><a href="data/valueindex_panel.csv" download>💾 전체 지표 데이터 다운로드 (CSV)</a></p>
+  </div>
 </main>
 <script type="module" src="assets/js/pages/index.js"></script>
 </body>

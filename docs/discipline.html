@@ -12,14 +12,19 @@
 <body>
 <main>
   <h1>🧘 투자 규율</h1>
+  <div id="disc-tabs" style="margin:6px 0 14px"></div>
+  <div id="dtab-why">
   <div id="content"></div>
+  </div>
 
-  <hr>
+  <div id="dtab-dd" hidden>
   <h2>역사적 드로다운 — 급락은 정상입니다</h2>
   <div id="dd-chart" class="chart"></div>
   <div id="dd-facts"></div>
 
-  <hr>
+  </div>
+
+  <div id="dtab-rules" hidden>
   <h2>시나리오별 행동 규칙 (사전 약속)</h2>
   <p id="scenario-lead"></p>
   <div class="grid-3">
@@ -39,7 +44,9 @@
       <li>❌ <b>'일단 팔고 지켜보기'가 최악의 수입니다</b></li></ul></div>
   </div>
 
-  <hr>
+  </div>
+
+  <div id="dtab-check" hidden>
   <h2>매수 전 체크리스트</h2>
   <p class="caption">하나라도 체크가 안 되면, 오늘은 사지 않는 것이 규칙입니다.
     (체크 상태는 저장되지 않습니다)</p>
@@ -59,6 +66,7 @@
   <hr>
   <h2>더 공부하기</h2>
   <div id="resources"></div>
+  </div>
 </main>
 <script type="module" src="assets/js/pages/discipline.js"></script>
 </body>
