@@ -5,6 +5,7 @@ import { injectNav, injectFooter } from "../nav.js";
 import { baseLayout, render, hline } from "../charts.js";
 import { interp } from "../stats.js";
 import { initStrategies } from "../strategies.js";
+import { initSubtabs } from "../subtabs.js";
 
 injectNav();
 const { meta, registry, overview, guide, content } =
@@ -96,3 +97,10 @@ $("per-indicator").innerHTML = registry.valuation_keys.map((key) => {
 $("resources").innerHTML = content.resources_ko;
 
 initStrategies("strat-tiles");
+
+initSubtabs("guide-tabs", [
+  { id: "basics", label: "기초", section: "tab-basics" },
+  { id: "indicators", label: "지표 해설", section: "tab-indicators" },
+  { id: "strategies", label: "전략 지도", section: "tab-strategies" },
+  { id: "faq", label: "FAQ·자료", section: "tab-faq" },
+]);
