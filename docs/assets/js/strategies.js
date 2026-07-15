@@ -4,7 +4,7 @@
 
 import { openModal } from "./modal.js";
 
-const STARS = (n) =>
+export const STARS = (n) =>
   n === 0 ? '<span style="color:#e34948;font-weight:600">진입 불가</span>'
           : '<span style="color:#eda100">' + "★".repeat(n) + "☆".repeat(5 - n) + "</span>";
 

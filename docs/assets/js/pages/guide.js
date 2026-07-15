@@ -6,6 +6,7 @@ import { baseLayout, render, hline } from "../charts.js";
 import { interp } from "../stats.js";
 import { initStrategies } from "../strategies.js";
 import { initSubtabs } from "../subtabs.js";
+import { showValuationPopup } from "../valpop.js";
 
 injectNav();
 const { meta, registry, overview, guide, content } =
@@ -75,24 +76,29 @@ if (xs.length && cur >= xs[0] && cur <= xs[xs.length - 1]) {
     `(커널 가중 분위 추정 — 예측이 아니라 역사적 조건부 분포입니다)`;
 }
 
-// ------------------------------------------------------- per-indicator guide
-$("per-indicator").innerHTML = registry.valuation_keys.map((key) => {
-  const m = registry.indicators[key];
-  const s = overview.summaries[key];
-  const parts = [];
-  if (m.analogy_ko) parts.push(`<p><b>① 비유하면</b> — ${m.analogy_ko}</p>`);
-  if (m.formula_ko) parts.push(`<p><b>② 공식</b> — <code>${m.formula_ko}</code></p>`);
-  if (m.interpret_ko) parts.push(`<p><b>③ 해석</b> — ${m.interpret_ko}</p>`);
-  if (s) parts.push(`<p><b>④ 지금은</b> — ${fmt(s.current, m.unit, registry)} ${m.unit}
-    (역사 평균 ${fmt(s.mean, m.unit, registry)}, ${s.start_year}년 이후
-    고평가 백분위 ${s.aligned_pctile.toFixed(0)})</p>`);
-  if (m.caveats_ko.length) {
-    parts.push("<p><b>⑤ 한계점</b></p><ul>" +
-      m.caveats_ko.map((c) => `<li>${c}</li>`).join("") + "</ul>");
-  }
-  return `<details class="vi"><summary>${m.label_ko} — ${m.what_ko}</summary>
-    ${parts.join("")}</details>`;
-}).join("");
+// ------------------------- per-indicator guide (tiles -> shared deep-dive)
+let _panel = null;
+async function getPanel() {
+  if (!_panel) ({ panel: _panel } = await load("panel"));
+  return _panel;
+}
+const ratingColor = (key) =>
+  (registry.ratings.find((r) => r.key === key) || {}).color || "#898781";
+$("per-indicator").innerHTML =
+  `<div class="tiles">` + registry.valuation_keys.map((key) => {
+    const m = registry.indicators[key];
+    const s = overview.summaries[key];
+    return `<button class="tile" data-key="${key}">
+      <span class="tile-dot" style="background:${ratingColor(s.rating)}"></span>
+      <span class="tile-label">${m.label_ko}</span>
+      <span class="tile-value">${fmt(s.current, m.unit, registry)}</span>
+      <span class="tile-sub">${m.unit}</span>
+    </button>`;
+  }).join("") + `</div>`;
+$("per-indicator").addEventListener("click", (e) => {
+  const tile = e.target.closest(".tile");
+  if (tile) showValuationPopup(registry, overview, tile.dataset.key, getPanel);
+});
 
 $("resources").innerHTML = content.resources_ko;
 
